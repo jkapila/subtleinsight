@@ -1,0 +1,853 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>Subtle Insight</title>
+<link>https://www.jitinkapila.com/index.html</link>
+<atom:link href="https://www.jitinkapila.com/index.xml" rel="self" type="application/rss+xml"/>
+<description></description>
+<image>
+<url>https://www.jitinkapila.com/images/favicon-32x32.png</url>
+<title>Subtle Insight</title>
+<link>https://www.jitinkapila.com/index.html</link>
+</image>
+<generator>quarto-1.1.179</generator>
+<lastBuildDate>Mon, 09 Aug 2021 18:30:00 GMT</lastBuildDate>
+<item>
+  <title>A flow to test your hypothesis in Python</title>
+  <dc:creator>Jitin Kapila</dc:creator>
+  <link>https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<p>All the practioners of data science always hit one giant thing to do with data and you know it well its <em>EDA -Exploratory Data Analysis</em>. This word <em>EDA</em><sup>1</sup> was coined by Tukey himself in his seminal book publised in 1983. But do you think that before that <em>EDA</em> dosen’t exsisted ?</p>
+<p>Well glad you thought. Before that all were doing what is called as <em><em>Hypothesis Tesing</em></em>. Yes, before this the race was majorly to fit the data and make most unbiased and robust estimate. But remember one thing when you talk about <em>Hypothesis Testing</em> it was always and majorly would be related to <em>RCTs (Randomized Controlled Trials)</em> a.k.a Randomized Clinical Trials and is <em>Gold Standard</em> of data.</p>
+<p><br></p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+“More on RCTs and ODs”
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Now let me now not hijack the discussion to what is <em>RCTs</em> and <em>Observational Data (ODs)</em> as it is more of <em>Philosphical Reasoning</em> rather than other quality of data, but essentially what we are trying to find is that can we by, using stats, identify <em>interesting patterns</em> in data.</p>
+<p>The only thing happens wit RCT data is that we tend to believe these intresting patterns coincide with some sort of <em>‘Cause-Effect’</em> kind of relationship. But essentially due to bia nature of ODs, we certainly cant conclude this. And hence, can only find <em>intresting</em> patterns.</p>
+</div>
+</div>
+</div>
+<p>Lets move on. The big question is, for whatever reason you are doing <em>HT</em> , you are doing it for finding <em>something intresting</em>. And that something intresting is usually found by using <em><em>Post-Hoc Tests</em></em>. Now there are variety of <em>Post-Hocs</em> available but what is more know and hence easily found to be implemented in <em>Tukey’s HSD</em>.</p>
+<p>So lets directly jump to how to follow this procedure. We’ll be using <code>bioinfokit</code> for this, as it is much simpler wrapper around whats impelmented in <code>statsmodels</code>.</p>
+</section>
+<section id="give-me-the-code" class="level1 page-columns page-full">
+<h1>Give me “The Code”</h1>
+<p>Here is the code for running and analyzing your hypothesis tests.</p>
+<div class="column-body-outset">
+<div class="cell" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;">from</span> bioinfokit <span class="im" style="color: #00769E;">import</span> analys</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="im" style="color: #00769E;">import</span> numpy <span class="im" style="color: #00769E;">as</span> np</span>
+<span id="cb1-4"><span class="im" style="color: #00769E;">from</span> scipy <span class="im" style="color: #00769E;">import</span> stats</span>
+<span id="cb1-5"></span>
+<span id="cb1-6"></span>
+<span id="cb1-7"><span class="co" style="color: #5E5E5E;"># Anova test code</span></span>
+<span id="cb1-8"><span class="kw" style="color: #003B4F;">def</span> do_anova_test(df, res_var, xfac_var, anova_model,ss_typ<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">3</span>,</span>
+<span id="cb1-9">                  effectsize<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'n2'</span>,result_full<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">False</span>,add_res<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">False</span>):</span>
+<span id="cb1-10">    <span class="co" style="color: #5E5E5E;">"""</span></span>
+<span id="cb1-11"><span class="co" style="color: #5E5E5E;">    Do all sequential anova tests</span></span>
+<span id="cb1-12"><span class="co" style="color: #5E5E5E;">    </span></span>
+<span id="cb1-13"><span class="co" style="color: #5E5E5E;">    Step 1) Leven's/ bartellet test for checking weather variance is homogenous or not</span></span>
+<span id="cb1-14"><span class="co" style="color: #5E5E5E;">    Step 2) Main ANOVA/ANCOVA test</span></span>
+<span id="cb1-15"><span class="co" style="color: #5E5E5E;">    Step 3) Tukey's HSD for individual combinations</span></span>
+<span id="cb1-16"><span class="co" style="color: #5E5E5E;">    </span></span>
+<span id="cb1-17"><span class="co" style="color: #5E5E5E;">    :param df: Pandas DataFrame holding all the columns</span></span>
+<span id="cb1-18"><span class="co" style="color: #5E5E5E;">    :param res_var: Variable for which we are checking ANOVA</span></span>
+<span id="cb1-19"><span class="co" style="color: #5E5E5E;">    :param xfac_var: Grouping Variables for which we want to do the comparisions</span></span>
+<span id="cb1-20"><span class="co" style="color: #5E5E5E;">    :param anova_model: SM forula for the model. This is life savour to make all things work</span></span>
+<span id="cb1-21"><span class="co" style="color: #5E5E5E;">    :param result_full: To provide all the results of intermediate steps</span></span>
+<span id="cb1-22"><span class="co" style="color: #5E5E5E;">    </span></span>
+<span id="cb1-23"><span class="co" style="color: #5E5E5E;">    """</span></span>
+<span id="cb1-24">    </span>
+<span id="cb1-25">    <span class="kw" style="color: #003B4F;">class</span> KeyResults:</span>
+<span id="cb1-26">        <span class="co" style="color: #5E5E5E;">"""</span></span>
+<span id="cb1-27"><span class="co" style="color: #5E5E5E;">        A basic class to hold all the results</span></span>
+<span id="cb1-28"><span class="co" style="color: #5E5E5E;">        """</span></span>
+<span id="cb1-29">        </span>
+<span id="cb1-30">        <span class="kw" style="color: #003B4F;">def</span> <span class="fu" style="color: #4758AB;">__init__</span>(<span class="va" style="color: #111111;">self</span>,result_full):</span>
+<span id="cb1-31">            <span class="va" style="color: #111111;">self</span>.keys <span class="op" style="color: #5E5E5E;">=</span> []</span>
+<span id="cb1-32">            <span class="va" style="color: #111111;">self</span>.result_full <span class="op" style="color: #5E5E5E;">=</span> result_full</span>
+<span id="cb1-33">        </span>
+<span id="cb1-34">        <span class="kw" style="color: #003B4F;">def</span> add_result(<span class="va" style="color: #111111;">self</span>,name,result):</span>
+<span id="cb1-35">            <span class="cf" style="color: #003B4F;">if</span> name <span class="op" style="color: #5E5E5E;">==</span> <span class="st" style="color: #20794D;">'tukeyhsd'</span>:</span>
+<span id="cb1-36">                <span class="va" style="color: #111111;">self</span>.keys.append(name)</span>
+<span id="cb1-37">                <span class="bu" style="color: null;">setattr</span>(<span class="va" style="color: #111111;">self</span>, name, result)</span>
+<span id="cb1-38">            <span class="cf" style="color: #003B4F;">elif</span> <span class="va" style="color: #111111;">self</span>.result_full:</span>
+<span id="cb1-39">                <span class="va" style="color: #111111;">self</span>.keys.append(name)</span>
+<span id="cb1-40">                <span class="bu" style="color: null;">setattr</span>(<span class="va" style="color: #111111;">self</span>, name, result)</span>
+<span id="cb1-41">            </span>
+<span id="cb1-42">    results <span class="op" style="color: #5E5E5E;">=</span> KeyResults(result_full)</span>
+<span id="cb1-43">    </span>
+<span id="cb1-44">    <span class="co" style="color: #5E5E5E;"># initiallize stat method</span></span>
+<span id="cb1-45">    res <span class="op" style="color: #5E5E5E;">=</span> analys.stat()</span>
+<span id="cb1-46">    </span>
+<span id="cb1-47">    <span class="co" style="color: #5E5E5E;"># doing levens test</span></span>
+<span id="cb1-48">    res.levene(df<span class="op" style="color: #5E5E5E;">=</span>df, res_var<span class="op" style="color: #5E5E5E;">=</span>res_var,xfac_var<span class="op" style="color: #5E5E5E;">=</span>xfac_var)</span>
+<span id="cb1-49">    <span class="bu" style="color: null;">print</span>(<span class="st" style="color: #20794D;">'</span><span class="ch" style="color: #20794D;">\n</span><span class="st" style="color: #20794D;">Leven</span><span class="ch" style="color: #20794D;">\'</span><span class="st" style="color: #20794D;">s Test Result:'</span>)</span>
+<span id="cb1-50">    <span class="bu" style="color: null;">print</span>(res.levene_summary)</span>
+<span id="cb1-51">    results.add_result(<span class="st" style="color: #20794D;">'levene'</span>,res.levene_summary)</span>
+<span id="cb1-52"></span>
+<span id="cb1-53">    <span class="co" style="color: #5E5E5E;"># doing bartlett test</span></span>
+<span id="cb1-54">    res.bartlett(df<span class="op" style="color: #5E5E5E;">=</span>df, res_var<span class="op" style="color: #5E5E5E;">=</span>res_var,xfac_var<span class="op" style="color: #5E5E5E;">=</span>xfac_var)</span>
+<span id="cb1-55">    <span class="bu" style="color: null;">print</span>(<span class="st" style="color: #20794D;">'</span><span class="ch" style="color: #20794D;">\n</span><span class="st" style="color: #20794D;">Bartlett</span><span class="ch" style="color: #20794D;">\'</span><span class="st" style="color: #20794D;">s Test Result:'</span>)</span>
+<span id="cb1-56">    <span class="bu" style="color: null;">print</span>(res.bartlett_summary)</span>
+<span id="cb1-57">    results.add_result(<span class="st" style="color: #20794D;">'bartlett'</span>,res.bartlett_summary)</span>
+<span id="cb1-58">    </span>
+<span id="cb1-59">    <span class="co" style="color: #5E5E5E;"># doing anova / ancova</span></span>
+<span id="cb1-60">    res.anova_stat(df<span class="op" style="color: #5E5E5E;">=</span>df, res_var<span class="op" style="color: #5E5E5E;">=</span>res_var, anova_model<span class="op" style="color: #5E5E5E;">=</span>anova_model,ss_typ<span class="op" style="color: #5E5E5E;">=</span>ss_typ)</span>
+<span id="cb1-61">    aov_res <span class="op" style="color: #5E5E5E;">=</span> res.anova_summary</span>
+<span id="cb1-62">    </span>
+<span id="cb1-63">    <span class="co" style="color: #5E5E5E;"># Add effect sizes</span></span>
+<span id="cb1-64">    <span class="cf" style="color: #003B4F;">if</span> effectsize <span class="op" style="color: #5E5E5E;">==</span> <span class="st" style="color: #20794D;">"n2"</span>:</span>
+<span id="cb1-65">        all_effsize <span class="op" style="color: #5E5E5E;">=</span> (aov_res[<span class="st" style="color: #20794D;">'sum_sq'</span>] <span class="op" style="color: #5E5E5E;">/</span> aov_res[<span class="st" style="color: #20794D;">'sum_sq'</span>].<span class="bu" style="color: null;">sum</span>()).to_numpy()</span>
+<span id="cb1-66">        all_effsize[<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">1</span>] <span class="op" style="color: #5E5E5E;">=</span> np.nan</span>
+<span id="cb1-67">    <span class="cf" style="color: #003B4F;">else</span>:</span>
+<span id="cb1-68">        ss_resid <span class="op" style="color: #5E5E5E;">=</span> aov_res[<span class="st" style="color: #20794D;">'sum_sq'</span>].iloc[<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">1</span>]</span>
+<span id="cb1-69">        all_effsize <span class="op" style="color: #5E5E5E;">=</span> aov_res[<span class="st" style="color: #20794D;">'sum_sq'</span>].<span class="bu" style="color: null;">apply</span>(<span class="kw" style="color: #003B4F;">lambda</span> x: x <span class="op" style="color: #5E5E5E;">/</span> (x <span class="op" style="color: #5E5E5E;">+</span> ss_resid)).to_numpy()</span>
+<span id="cb1-70">        all_effsize[<span class="op" style="color: #5E5E5E;">-</span><span class="dv" style="color: #AD0000;">1</span>] <span class="op" style="color: #5E5E5E;">=</span> np.nan</span>
+<span id="cb1-71">    aov_res[effectsize] <span class="op" style="color: #5E5E5E;">=</span> all_effsize</span>
+<span id="cb1-72">    <span class="co" style="color: #5E5E5E;">#aov_res['bw_'] = res.anova_model_out.params.iloc[-1]</span></span>
+<span id="cb1-73">    aov_res <span class="op" style="color: #5E5E5E;">=</span> aov_res.<span class="bu" style="color: null;">round</span>(<span class="dv" style="color: #AD0000;">4</span>)</span>
+<span id="cb1-74">    </span>
+<span id="cb1-75">    <span class="co" style="color: #5E5E5E;"># printing results</span></span>
+<span id="cb1-76">    <span class="bu" style="color: null;">print</span>(<span class="st" style="color: #20794D;">'</span><span class="ch" style="color: #20794D;">\n</span><span class="st" style="color: #20794D;">ANOVA\ANCOVA Test Result:'</span>)</span>
+<span id="cb1-77">    <span class="bu" style="color: null;">print</span>(aov_res)</span>
+<span id="cb1-78">    results.add_result(<span class="st" style="color: #20794D;">'anova'</span>,res.anova_summary.<span class="bu" style="color: null;">round</span>(<span class="dv" style="color: #AD0000;">4</span>))</span>
+<span id="cb1-79">    results.add_result(<span class="st" style="color: #20794D;">'anova_model'</span>,res.anova_model_out)</span>
+<span id="cb1-80">    </span>
+<span id="cb1-81">    <span class="co" style="color: #5E5E5E;"># doing tukey's hsd top compare the groups</span></span>
+<span id="cb1-82">    res.tukey_hsd(df<span class="op" style="color: #5E5E5E;">=</span>df, res_var<span class="op" style="color: #5E5E5E;">=</span>res_var,xfac_var<span class="op" style="color: #5E5E5E;">=</span>xfac_var, anova_model<span class="op" style="color: #5E5E5E;">=</span>anova_model,ss_typ<span class="op" style="color: #5E5E5E;">=</span>ss_typ)</span>
+<span id="cb1-83">    <span class="bu" style="color: null;">print</span>(<span class="st" style="color: #20794D;">'</span><span class="ch" style="color: #20794D;">\n</span><span class="st" style="color: #20794D;">Tukey HSD Result:'</span>)</span>
+<span id="cb1-84">    <span class="bu" style="color: null;">print</span>(res.tukey_summary.<span class="bu" style="color: null;">round</span>(<span class="dv" style="color: #AD0000;">4</span>))</span>
+<span id="cb1-85">    results.add_result(<span class="st" style="color: #20794D;">'tukeyhsd'</span>,res.tukey_summary.<span class="bu" style="color: null;">round</span>(<span class="dv" style="color: #AD0000;">4</span>))</span>
+<span id="cb1-86">    </span>
+<span id="cb1-87">    <span class="co" style="color: #5E5E5E;"># add all result componets again if needed </span></span>
+<span id="cb1-88">    <span class="cf" style="color: #003B4F;">if</span> add_res:</span>
+<span id="cb1-89">        results.add_result(<span class="st" style="color: #20794D;">'allresult'</span>,res)</span>
+<span id="cb1-90">    </span>
+<span id="cb1-91">    <span class="cf" style="color: #003B4F;">return</span> results</span></code></pre></div>
+</details>
+</div>
+</div>
+<p>And here is one to make it presentableto audience.</p>
+<div class="column-body-outset">
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;">import</span> seaborn <span class="im" style="color: #00769E;">as</span> sns</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;">as</span> plt</span>
+<span id="cb2-3"></span>
+<span id="cb2-4">plt.style.use(<span class="st" style="color: #20794D;">'seaborn-bright'</span>)</span>
+<span id="cb2-5"></span>
+<span id="cb2-6"><span class="kw" style="color: #003B4F;">def</span> plot_hsd(hsdres,p_cutoff<span class="op" style="color: #5E5E5E;">=</span><span class="fl" style="color: #AD0000;">0.05</span>,title<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">None</span>,ax<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">None</span>,figsize<span class="op" style="color: #5E5E5E;">=</span>(<span class="dv" style="color: #AD0000;">10</span>,<span class="dv" style="color: #AD0000;">7</span>)):</span>
+<span id="cb2-7">     <span class="co" style="color: #5E5E5E;">"""</span></span>
+<span id="cb2-8"><span class="co" style="color: #5E5E5E;">     Do plotting of tukeyhsd results</span></span>
+<span id="cb2-9"><span class="co" style="color: #5E5E5E;">    </span></span>
+<span id="cb2-10"><span class="co" style="color: #5E5E5E;">  </span></span>
+<span id="cb2-11"><span class="co" style="color: #5E5E5E;">    :param hsdres: 'tukeyhsd' result form the do_anova_test function</span></span>
+<span id="cb2-12"><span class="co" style="color: #5E5E5E;">    :param p_cutoff: Cutoff at which we get say a combination is significant</span></span>
+<span id="cb2-13"><span class="co" style="color: #5E5E5E;">    :param title: Title of the plot</span></span>
+<span id="cb2-14"><span class="co" style="color: #5E5E5E;">    :param ax: Define or get the matplotlib axes</span></span>
+<span id="cb2-15"><span class="co" style="color: #5E5E5E;">    :param figsize: Mention Figure size to draw</span></span>
+<span id="cb2-16"><span class="co" style="color: #5E5E5E;">    </span></span>
+<span id="cb2-17"><span class="co" style="color: #5E5E5E;">    """</span></span>
+<span id="cb2-18"></span>
+<span id="cb2-19">    <span class="cf" style="color: #003B4F;">if</span> ax <span class="kw" style="color: #003B4F;">is</span> <span class="va" style="color: #111111;">None</span>:</span>
+<span id="cb2-20">        fig,axp <span class="op" style="color: #5E5E5E;">=</span> plt.subplots(figsize<span class="op" style="color: #5E5E5E;">=</span>figsize)</span>
+<span id="cb2-21">    <span class="cf" style="color: #003B4F;">else</span>:</span>
+<span id="cb2-22">        axp <span class="op" style="color: #5E5E5E;">=</span> ax</span>
+<span id="cb2-23">    </span>
+<span id="cb2-24">    <span class="co" style="color: #5E5E5E;"># helper func</span></span>
+<span id="cb2-25">    p_ind <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">lambda</span> x : <span class="st" style="color: #20794D;">''</span> <span class="cf" style="color: #003B4F;">if</span> x <span class="op" style="color: #5E5E5E;">&gt;</span> <span class="fl" style="color: #AD0000;">0.1</span> <span class="cf" style="color: #003B4F;">else</span> (<span class="st" style="color: #20794D;">'+'</span> <span class="cf" style="color: #003B4F;">if</span> x <span class="op" style="color: #5E5E5E;">&gt;</span> <span class="fl" style="color: #AD0000;">0.05</span> <span class="cf" style="color: #003B4F;">else</span> (<span class="st" style="color: #20794D;">'*'</span> <span class="cf" style="color: #003B4F;">if</span> x <span class="op" style="color: #5E5E5E;">&gt;</span> <span class="fl" style="color: #AD0000;">0.01</span> <span class="cf" style="color: #003B4F;">else</span> (<span class="st" style="color: #20794D;">'**'</span> <span class="cf" style="color: #003B4F;">if</span> x <span class="op" style="color: #5E5E5E;">&gt;</span><span class="fl" style="color: #AD0000;">0.001</span> <span class="cf" style="color: #003B4F;">else</span> <span class="st" style="color: #20794D;">'***'</span>)))</span>
+<span id="cb2-26">    label_gen  <span class="op" style="color: #5E5E5E;">=</span> <span class="kw" style="color: #003B4F;">lambda</span> x: <span class="ss" style="color: #20794D;">f"$</span><span class="sc" style="color: #5E5E5E;">{</span>x[<span class="dv" style="color: #AD0000;">0</span>]<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;"> - </span><span class="sc" style="color: #5E5E5E;">{</span>x[<span class="dv" style="color: #AD0000;">1</span>]<span class="sc" style="color: #5E5E5E;">}</span><span class="ss" style="color: #20794D;">\ |\ p:</span><span class="sc" style="color: #5E5E5E;">{</span>x[<span class="dv" style="color: #AD0000;">2</span>]<span class="sc" style="color: #5E5E5E;">:0.2f}{</span>p_ind(x[<span class="dv" style="color: #AD0000;">2</span>])<span class="sc" style="color: #5E5E5E;">:5s}</span><span class="ss" style="color: #20794D;">$"</span></span>
+<span id="cb2-27">    </span>
+<span id="cb2-28">    <span class="co" style="color: #5E5E5E;">#setting values</span></span>
+<span id="cb2-29">    mask <span class="op" style="color: #5E5E5E;">=</span> hsdres[<span class="st" style="color: #20794D;">'p-value'</span>] <span class="op" style="color: #5E5E5E;">&lt;=</span> p_cutoff</span>
+<span id="cb2-30">    yticklabs <span class="op" style="color: #5E5E5E;">=</span> hsdres[[<span class="st" style="color: #20794D;">'group1'</span>,<span class="st" style="color: #20794D;">'group2'</span>,<span class="st" style="color: #20794D;">'p-value'</span>]].<span class="bu" style="color: null;">apply</span>(label_gen,axis<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">1</span>).values</span>
+<span id="cb2-31">    ys <span class="op" style="color: #5E5E5E;">=</span> np.arange(<span class="bu" style="color: null;">len</span>(hsdres))</span>
+<span id="cb2-32">    </span>
+<span id="cb2-33">    <span class="co" style="color: #5E5E5E;"># adding plot to axes</span></span>
+<span id="cb2-34">    axp.errorbar(hsdres[<span class="op" style="color: #5E5E5E;">~</span>mask][<span class="st" style="color: #20794D;">'Diff'</span>],ys[<span class="op" style="color: #5E5E5E;">~</span>mask],xerr<span class="op" style="color: #5E5E5E;">=</span>np.<span class="bu" style="color: null;">abs</span>(hsdres[<span class="op" style="color: #5E5E5E;">~</span>mask][[<span class="st" style="color: #20794D;">'Lower'</span>,<span class="st" style="color: #20794D;">"Upper"</span>]]).values.T,</span>
+<span id="cb2-35">                fmt<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'o'</span>, color<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'black'</span>, ecolor<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'lightgray'</span>, elinewidth<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">2</span>, capsize<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb2-36">    axp.errorbar(hsdres[mask][<span class="st" style="color: #20794D;">'Diff'</span>],ys[mask],xerr<span class="op" style="color: #5E5E5E;">=</span>np.<span class="bu" style="color: null;">abs</span>(hsdres[mask][[<span class="st" style="color: #20794D;">'Lower'</span>,<span class="st" style="color: #20794D;">"Upper"</span>]]).values.T,</span>
+<span id="cb2-37">                fmt<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'o'</span>, color<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'red'</span>, ecolor<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'pink'</span>, elinewidth<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">2</span>, capsize<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">5</span>)</span>
+<span id="cb2-38">    axp.axvline(x<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">0</span>,linestyle<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'--'</span>,c<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'skyblue'</span>)</span>
+<span id="cb2-39">    axp.set_yticks([])</span>
+<span id="cb2-40">    (l,u) <span class="op" style="color: #5E5E5E;">=</span> axp.get_xlim()</span>
+<span id="cb2-41">    axp.set_xlim(l<span class="op" style="color: #5E5E5E;">+</span><span class="fl" style="color: #AD0000;">1.5</span><span class="op" style="color: #5E5E5E;">*</span>l,u)</span>
+<span id="cb2-42">    (l,u) <span class="op" style="color: #5E5E5E;">=</span> axp.get_xlim()</span>
+<span id="cb2-43">    <span class="cf" style="color: #003B4F;">for</span> idx,labs <span class="kw" style="color: #003B4F;">in</span> <span class="bu" style="color: null;">enumerate</span>(yticklabs):</span>
+<span id="cb2-44">        axp.text(l<span class="op" style="color: #5E5E5E;">-</span><span class="fl" style="color: #AD0000;">0.1</span><span class="op" style="color: #5E5E5E;">*</span>l,ys[idx],labs)</span>
+<span id="cb2-45">    axp.set_yticklabels([])</span>
+<span id="cb2-46">    </span>
+<span id="cb2-47">    <span class="co" style="color: #5E5E5E;"># finally doing what is needed</span></span>
+<span id="cb2-48">    <span class="cf" style="color: #003B4F;">if</span> ax <span class="kw" style="color: #003B4F;">is</span> <span class="va" style="color: #111111;">None</span>:</span>
+<span id="cb2-49">        plt.title(<span class="st" style="color: #20794D;">''</span> <span class="cf" style="color: #003B4F;">if</span> title <span class="kw" style="color: #003B4F;">is</span> <span class="va" style="color: #111111;">None</span> <span class="cf" style="color: #003B4F;">else</span> title,fontsize<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">14</span>)</span>
+<span id="cb2-50">        plt.show()</span>
+<span id="cb2-51">    <span class="cf" style="color: #003B4F;">else</span>:</span>
+<span id="cb2-52">        <span class="cf" style="color: #003B4F;">return</span> axp</span></code></pre></div>
+</details>
+</div>
+</div>
+</section>
+<section id="what-are-the-results" class="level1 page-columns page-full">
+<h1>What are the results</h1>
+<p>Pheww… Thats too much code right. But that would save a lot of your time in real life. So in reallife you would write code as 3 steps below:</p>
+<div class="column-body-outset">
+<div class="cell" data-execution_count="3">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;"># import libraries</span></span>
+<span id="cb3-2"><span class="im" style="color: #00769E;">import</span> pandas <span class="im" style="color: #00769E;">as</span> pd</span>
+<span id="cb3-3"></span>
+<span id="cb3-4"><span class="co" style="color: #5E5E5E;"># Getting car data from UCI</span></span>
+<span id="cb3-5">df <span class="op" style="color: #5E5E5E;">=</span> pd.read_csv(<span class="st" style="color: #20794D;">'https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data'</span>,</span>
+<span id="cb3-6">                 sep<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'\s+'</span>,header<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">None</span>,</span>
+<span id="cb3-7">                 names<span class="op" style="color: #5E5E5E;">=</span>[<span class="st" style="color: #20794D;">'mpg'</span>,<span class="st" style="color: #20794D;">'cylinders'</span>,<span class="st" style="color: #20794D;">'displacement'</span>,<span class="st" style="color: #20794D;">'horsepower'</span>,<span class="st" style="color: #20794D;">'weight'</span>,</span>
+<span id="cb3-8">                 <span class="st" style="color: #20794D;">'acceleration'</span>,<span class="st" style="color: #20794D;">'model_year'</span>,<span class="st" style="color: #20794D;">'origin'</span>,<span class="st" style="color: #20794D;">'car_name'</span>])</span>
+<span id="cb3-9">df.head()</span>
+<span id="cb3-10"></span>
+<span id="cb3-11"><span class="co" style="color: #5E5E5E;"># Syntax to do anove with validating the assumption, doing test and a post-hoc</span></span>
+<span id="cb3-12">results <span class="op" style="color: #5E5E5E;">=</span> do_anova_test(df<span class="op" style="color: #5E5E5E;">=</span>df, res_var<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'mpg'</span>,xfac_var<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'cylinders'</span>, </span>
+<span id="cb3-13">                        anova_model<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">'mpg ~ C(cylinders)+C(origin)+C(cylinders):C(origin)'</span>,</span>
+<span id="cb3-14">                        ss_typ<span class="op" style="color: #5E5E5E;">=</span><span class="dv" style="color: #AD0000;">3</span>, result_full<span class="op" style="color: #5E5E5E;">=</span><span class="va" style="color: #111111;">True</span>)</span>
+<span id="cb3-15"></span>
+<span id="cb3-16"><span class="co" style="color: #5E5E5E;"># Numbers are clumsy for most. Making more interpretable plot on above results.</span></span>
+<span id="cb3-17">plot_hsd(results.tukeyhsd.sort_values(<span class="st" style="color: #20794D;">'Diff'</span>), title<span class="op" style="color: #5E5E5E;">=</span><span class="st" style="color: #20794D;">"Tukey HSD resutls Anova of MPG ~ Cylinder"</span>)</span></code></pre></div>
+</details>
+</div>
+</div>
+<p>Results form the <code>do_anova_test</code></p>
+<p><br></p>
+<div class="panel-center panel-grid page-columns page-full">
+<div class="g-col-24 g-col-lg-20 g-start-lg-2 page-columns page-full">
+<section id="results" class="level2 panel-center column-body-outset">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<pre><code>Levens Test Result:
+                 Parameter    Value
+0      Test statistics (W)  14.5856
+1  Degrees of freedom (Df)   4.0000
+2                  p value   0.0000
+
+Bartletts Test Result:
+                 Parameter    Value
+0      Test statistics (T)  61.2143
+1  Degrees of freedom (Df)   4.0000
+2                  p value   0.0000
+
+ANOVA\ANCOVA Test Result:
+                           df     sum_sq    mean_sq         F  PR(&gt;F)      n2
+Intercept                 1.0  6195.1701  6195.1701  296.3452  0.0000  0.2727
+C(cylinders)              4.0  7574.5864  1893.6466   90.5824  0.0000  0.3334
+C(origin)                 2.0   241.0703   120.5351    5.7658  0.0034  0.0106
+C(cylinders):C(origin)    8.0   577.4821    72.1853    3.4530  0.0046  0.0254
+Residual                389.0  8132.1404    20.9052       NaN     NaN     NaN
+
+Tukey HSD Result:
+   group1  group2     Diff    Lower    Upper  q-value  p-value
+0       8       4  14.3237  12.8090  15.8383  36.6527   0.0010
+1       8       6   5.0226   3.1804   6.8648  10.5671   0.0010
+2       8       3   5.5869  -0.7990  11.9728   3.3909   0.1183
+3       8       5  12.4036   5.0643  19.7428   6.5503   0.0010
+4       4       6   9.3011   7.6765  10.9256  22.1910   0.0010
+5       4       3   8.7368   2.4102  15.0633   5.3524   0.0017
+6       4       5   1.9201  -5.3676   9.2078   1.0212   0.9000
+7       6       3   0.5643  -5.8486   6.9772   0.3410   0.9000
+8       6       5   7.3810   0.0182  14.7437   3.8854   0.0491
+9       3       5   6.8167  -2.7539  16.3873   2.7606   0.2919</code></pre>
+<p><br></p>
+</section>
+</div>
+</div>
+<p><br> Results form the <code>plot_hsd</code></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="TukeyHSD.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis/TukeyHSD.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+<p><br></p>
+<p>Plots look good with ‘p-values’.</p>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>Things to keep in mind before you do any hypothesis testing.</p>
+<blockquote class="blockquote">
+<p>Since we applied the above to a <em><em>Non RCT</em></em> we cannot conclude that Difference in mpg based on cylinder is huge specially as number of cylinders goes up. But this statement might not be as explicit as might be apperiang from plot. Unless you have a strong believe that the data follows with rules and assumptions of RCTs, we should be only seeking <em>intresting</em> as in <em>associated</em> results and not <em>cause-effet</em> resluts.</p>
+</blockquote>
+<p>Hope this give you kickstart to find you intresting patterns. Happy Learning!</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Emerson, J. D., &amp; Hoaglin, D. C. (1983). Stem-and-leaf displays. In D. C. Hoaglin, F. Mosteller, &amp; J. W. Tukey (Eds.) Understanding Robust and Exploratory Data Analysis, pp.&nbsp;7–32. New York: Wiley. <a href="https://www.wiley.com/en-in/Understanding+Robust+and+Exploratory+Data+Analysis-p-9780471384915">Book is here.</a>↩︎</p></li>
+</ol>
+</section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{kapila2021,
+  author = {Jitin Kapila},
+  editor = {},
+  title = {A Flow to Test Your Hypothesis in {Python}},
+  date = {2021-08-10},
+  url = {https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-kapila2021" class="csl-entry quarto-appendix-citeas">
+Jitin Kapila. 2021. <span>“A Flow to Test Your Hypothesis in
+Python.”</span> August 10, 2021. <a href="https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis">https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis</a>.
+</div></div></section></div> ]]></description>
+  <category>eda</category>
+  <category>hypothesis</category>
+  <category>analysis</category>
+  <category>python</category>
+  <guid>https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis/index.html</guid>
+  <pubDate>Mon, 09 Aug 2021 18:30:00 GMT</pubDate>
+  <media:content url="https://www.jitinkapila.com/posts/20210821-flow-to-test-your-hypothesis/TukeyHSD.png" medium="image" type="image/png" height="107" width="144"/>
+</item>
+<item>
+  <title>Packages</title>
+  <dc:creator>Jitin Kapila</dc:creator>
+  <link>https://www.jitinkapila.com/posts/packages.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<blockquote class="blockquote">
+<p><strong>featuregen</strong> is a package that holds many common feature generating facilities for Predictive Modelling purposes. Please read docs to for example usage. Refer <a href="https://jkapila.github.io/featuregen/">Docs</a>. More about plot following grouped transformation <a href="https://jkapila.github.io/featuregen/example_gallery/index.html">here</a>.</p>
+</blockquote>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://jkapila.github.io/featuregen/_images/sphx_glr_plot_grouped_transformation_001.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Grouped Trasformation"><img src="https://www.jitinkapila.com/posts/https:/jkapila.github.io/featuregen/_images/sphx_glr_plot_grouped_transformation_001.png" class="img-fluid figure-img"></a></p>
+<p></p><figcaption class="figure-caption">Grouped Trasformation</figcaption><p></p>
+</figure>
+</div>
+<p><br> <br> <br></p>
+<p><strong><em>Old Work</em></strong></p>
+<ul>
+<li>Misc Work - Lot of prior work but not well document can be found at <a href="https://github.com/jkapila/paper-codebase">Github</a></li>
+<li>Pygemodels - A package for fitting Growth and Epidemiology Models in Python <a href="https://github.com/jkapila/pygemodels">Github</a></li>
+<li>VCVN - R package for Variable Selection, Curve Fitting, Variable Conversion and Normalization <a href="https://github.com/jkapila/vcvn">Github</a></li>
+<li>Simulator Series in R - A Curve and Distribution Simulator in R <a href="https://github.com/jkapila/SimulatorInR">Github</a></li>
+</ul>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{kapila2020,
+  author = {Jitin Kapila},
+  editor = {},
+  title = {Packages},
+  date = {2020-05-23},
+  url = {https://www.jitinkapila.com/posts/packages.html},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-kapila2020" class="csl-entry quarto-appendix-citeas">
+Jitin Kapila. 2020. <span>“Packages.”</span> May 23, 2020. <a href="https://www.jitinkapila.com/posts/packages.html">https://www.jitinkapila.com/posts/packages.html</a>.
+</div></div></section></div> ]]></description>
+  <category>portfolio</category>
+  <category>development</category>
+  <guid>https://www.jitinkapila.com/posts/packages.html</guid>
+  <pubDate>Sat, 23 May 2020 12:20:31 GMT</pubDate>
+  <media:content url="https://unsplash.com/photos/npxXWgQ33ZQ/download?force=true&amp;w=1920" medium="image"/>
+</item>
+<item>
+  <title>Adaptive Regression</title>
+  <dc:creator>Jitin Kapila</dc:creator>
+  <link>https://www.jitinkapila.com/posts/20180501-adaptive-regression/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<section id="observation" class="level1">
+<h1>Observation</h1>
+<p>Here I am trying to express our logic to find such <strong>Observation</strong>. Lets dive in.</p>
+<p>There are different value estimation technique like regression analysis and time-series analysis. Everyone of us has experimented on regression using OLS ,MLE, Ridge, LASSO, Robust etc., and also might have evaluated them using RMSE (Root Mean/Median Square Error), MAD (Mean/Median Absolute Deviation), MAE (Mean / Median Absolute Error) and MAPE (Mean/Median Absolute Percentage Error), etc…</p>
+<p>But all of these gives a single point estimate that what is the overall error looks like. Just a different thought!! can we be sure that this single value of MAPE or MAE? How easy it is to infer that our trained model has fitted well across the distribution of dependent variable?</p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<p>Let me give you a pretty small data-set to play with <strong><em>“The Anscombe’s quartet”</em></strong>. This is a very famous data-set by <em>Francis Anscombe</em>. Please refer the plots below to understand the distribution of y1, y2, y3, y4. Isn’t it different?</p>
+</div>
+<div class="quarto-figure quarto-figure-center" style="flex-basis: 70.0%;justify-content: center;">
+<figure class="figure">
+<p><a href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Anscombe%27s_quartet_3.svg/425px-Anscombe%27s_quartet_3.svg.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://www.jitinkapila.com/posts/20180501-adaptive-regression/https:/upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Anscombe%27s_quartet_3.svg/425px-Anscombe%27s_quartet_3.svg.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Would the measure of central tendency and disportion be same for this data? I am sure none of us would believe but to our utter surprise we see all the descriptive stats are kind of same. Don’t believe me !!! Please see the results below ( Source: <a href="https://en.wikipedia.org/wiki/Anscombe%27s_quartet">Wikipedia</a>).</p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-figure quarto-figure-center" style="flex-basis: 75.0%;justify-content: center;">
+<figure class="figure">
+<p><a href="Anscombe_Stats.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="https://www.jitinkapila.com/posts/20180501-adaptive-regression/Anscombe_Stats.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 25.0%;justify-content: center;">
+<p>Astonished !!! Don’t be. This is what has been hiding behind those numbers. And this is why we really won’t be able to cross certain performance level.</p>
+</div>
+</div>
+</div>
+<p>Unless you change some features or even do a lot of hyper parameter tuning, your results won’t vary much. If you look at the average value of MAPE in each decile you would see an interesting pattern. Let us show you what we see that pattern. One day while working on a business problem where I was using regression on a dicussion with my senior, we deviced a different way of model diagnosis. We worked together to give this a shape and build on it.</p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: center;">
+<p>As you can see it is absolutely evident that either of the side in the distribution of MAPE values is going wild!!!!!!! <em>Still overall MAPE is good (18%).</em></p>
+</div>
+<div class="quarto-figure quarto-figure-center" style="flex-basis: 80.0%;justify-content: center;">
+<figure class="figure">
+<p><a href="Pre_Mape_Plot.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://www.jitinkapila.com/posts/20180501-adaptive-regression/Pre_Mape_Plot.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="ideation" class="level1 page-columns page-full">
+<h1>Ideation</h1>
+<p>We worked together to build a different framework to address such issues on the go and <strong><em>reduce the MAPE deterioration on the edge of the distribution.</em></strong></p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-figure quarto-figure-right" style="flex-basis: 55.0%;justify-content: center;">
+<figure class="figure">
+<p><a href="Image_2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Plot for Classical Bath Tub Curve using a Hazard Function"><img src="https://www.jitinkapila.com/posts/20180501-adaptive-regression/Image_2.png" class="img-fluid figure-img" width="450"></a></p>
+<p></p><figcaption class="figure-caption">Plot for Classical Bath Tub Curve using a Hazard Function</figcaption><p></p>
+</figure>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 45.0%;justify-content: center;">
+<p>This problems gives rise to a concept we named as <strong><em>Distribution Assertive Regression (DAR)</em></strong>. DAR is a framework that is based on cancelling the weakness of one point summaries by using the classical concepts of Reliability Engineering : <strong>The Bath Tub Curve</strong>. The Specialty of this curve is that it gives you the likelihood which areas one tends to have high failure rates.</p>
+</div>
+</div>
+</div>
+<p>In our experiments when we replace failure with MAPE value and the Time with sorted (ascending) value of target / dependent variable, we observe the same phenomenon. This is likely to happen because most of regression techniques assumes Normal (Gaussian) Distribution of data and fits itself towards the central tendency of this distribution.</p>
+<p>Because of this tendency, any regression methods tends to learn less about data which are away from the central tendency of the target.</p>
+<p>Lets look at BostonHousing data from <code>mlbench</code> package in R.</p>
+<div class="column-body">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="Plot_Bathtub.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="https://www.jitinkapila.com/posts/20180501-adaptive-regression/Plot_Bathtub.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+<p>Here the MAPE is calculated for each decile split of ordered target variable. As you can observe it is following the bath tub curve. Hence the validates our hypothesis that the regression method is not able to understand much about the data at the either ends of the distribution.</p>
+<!-- {{< image classes="fancybox nocaption right fig-75" <title="**Plot for MAPE Bath Tub Curve for Decile Split “mdev” from Data**"> } } -->
+</section>
+<section id="analysis" class="level1 page-columns page-full">
+<h1>Analysis</h1>
+<p>Now the DAR framework essentially fixes this weakness of regression method and understands the behavior of data which is stable and can be tweak in a fashion that can be use in general practice.</p>
+<div class="column-page-left quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-figure quarto-figure-center" style="flex-basis: 90.0%;justify-content: center;">
+<figure class="figure">
+<p><a href="Post_Mape_Plot.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="https://www.jitinkapila.com/posts/20180501-adaptive-regression/Post_Mape_Plot.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 1.0%;justify-content: center;">
+<p>&nbsp;</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 9.0%;justify-content: center;">
+<p>Plot of MAPE Bath Tub Curve after <em>applying DAR Framework</em> for Decile Split <em>“mdev”</em> from Data.</p>
+</div>
+</div>
+</div>
+<p>How this framework with same method reduced MAPEs so much and made model much more stable…?? Well here it is:</p>
+<p><strong>The DAR framework splits the data at either ends of the order target variable and performs regression on these “split” data individually. This inherently reduces the so called “noise” part of the data and treat it as an individual data.</strong></p>
+<p>Now you might be thinking while applying regression this sounds good but how will one score this on new data. Well to answer that we used our most simple yet very effective friend “KNN” (Though any multiclass Classifier can be used here). So ideally scoring involves two step method :</p>
+<blockquote class="blockquote">
+<ol type="1">
+<li>Score new value against each KNN / Multiclass Classifier model of the data<br>
+</li>
+<li>Based on closeness we score it with the regression method used for that part of data.</li>
+</ol>
+</blockquote>
+<p>So now we know how we can improve the prediction power of data for regression.</p>
+<p>Refer flowchart below for the framework</p>
+</section>
+<section id="code-and-framework" class="level1 page-columns page-full">
+<h1>Code and Framework</h1>
+<p>Here are the some goodies.The code for the above analysis and plotting fucntions: <br></p>
+<div class="panel-tabset column-body-outset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true">Flow Chart of logic flow</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false">R - Full Code</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" aria-controls="tabset-1-3" aria-selected="false">R - Plotting</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<p>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="do" style="color: #5E5E5E;
+font-style: italic;">#########################################################################</span></span>
+<span id="cb1-2"><span class="co" style="color: #5E5E5E;">#</span></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;">#         Implementation of Distribution Assertive Regression</span></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;">#</span></span>
+<span id="cb1-5"><span class="do" style="color: #5E5E5E;
+font-style: italic;">#########################################################################</span></span>
+<span id="cb1-6"></span>
+<span id="cb1-7"></span>
+<span id="cb1-8"><span class="co" style="color: #5E5E5E;"># Definign Mean Average Percentage Error</span></span>
+<span id="cb1-9">mape <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(actual,predicted,<span class="at" style="color: #657422;">asmean=</span><span class="cn" style="color: #8f5902;">FALSE</span>){</span>
+<span id="cb1-10">  ape <span class="ot" style="color: #003B4F;">&lt;-</span> (<span class="fu" style="color: #4758AB;">abs</span>(actual<span class="sc" style="color: #5E5E5E;">-</span>predicted) <span class="sc" style="color: #5E5E5E;">*</span> <span class="dv" style="color: #AD0000;">100</span>)<span class="sc" style="color: #5E5E5E;">/</span> actual</span>
+<span id="cb1-11">  ape <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">if</span>(asmean)</span>
+<span id="cb1-12">    <span class="fu" style="color: #4758AB;">mean</span>(ape)</span>
+<span id="cb1-13">  <span class="cf" style="color: #003B4F;">else</span></span>
+<span id="cb1-14">    <span class="fu" style="color: #4758AB;">round</span>(ape,<span class="dv" style="color: #AD0000;">5</span>)</span>
+<span id="cb1-15">  ape</span>
+<span id="cb1-16">}</span>
+<span id="cb1-17"></span>
+<span id="cb1-18">decileBinner <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(data,target_var,splitname,<span class="at" style="color: #657422;">breaks =</span> <span class="dv" style="color: #AD0000;">10</span>){</span>
+<span id="cb1-19">  <span class="fu" style="color: #4758AB;">require</span>(dplyr)</span>
+<span id="cb1-20">  <span class="cf" style="color: #003B4F;">if</span>(<span class="fu" style="color: #4758AB;">missing</span>(splitname)){</span>
+<span id="cb1-21">    splitname <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="st" style="color: #20794D;">"splits"</span></span>
+<span id="cb1-22">  }</span>
+<span id="cb1-23">  data <span class="ot" style="color: #003B4F;">&lt;-</span> data <span class="sc" style="color: #5E5E5E;">%&gt;%</span>  </span>
+<span id="cb1-24">    <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">s =</span> <span class="fu" style="color: #4758AB;">as.numeric</span>(<span class="fu" style="color: #4758AB;">cut</span>(data[,target_var],</span>
+<span id="cb1-25">           <span class="at" style="color: #657422;">breaks =</span> breaks,<span class="at" style="color: #657422;">rigth =</span> T)))</span>
+<span id="cb1-26">  name_ <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">colnames</span>(data)</span>
+<span id="cb1-27">  name_ [name_<span class="sc" style="color: #5E5E5E;">==</span><span class="st" style="color: #20794D;">"s"</span>] <span class="ot" style="color: #003B4F;">&lt;-</span> splitname</span>
+<span id="cb1-28">  <span class="fu" style="color: #4758AB;">colnames</span>(data) <span class="ot" style="color: #003B4F;">&lt;-</span> name_</span>
+<span id="cb1-29">  <span class="fu" style="color: #4758AB;">return</span>(data)</span>
+<span id="cb1-30">}</span>
+<span id="cb1-31"></span>
+<span id="cb1-32"><span class="co" style="color: #5E5E5E;"># Normalising the data</span></span>
+<span id="cb1-33">normalise <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(x){</span>
+<span id="cb1-34">  min_ <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">min</span>(x,<span class="at" style="color: #657422;">na.rm =</span> T)</span>
+<span id="cb1-35">  max_ <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">max</span>(x,<span class="at" style="color: #657422;">na.rm =</span> T)</span>
+<span id="cb1-36">  y <span class="ot" style="color: #003B4F;">&lt;-</span> (x<span class="sc" style="color: #5E5E5E;">-</span>min_)<span class="sc" style="color: #5E5E5E;">/</span>(max_<span class="sc" style="color: #5E5E5E;">-</span>min_)</span>
+<span id="cb1-37">  <span class="fu" style="color: #4758AB;">return</span>(y)</span>
+<span id="cb1-38">}</span>
+<span id="cb1-39"></span>
+<span id="cb1-40">dummyVar <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(data,name,<span class="at" style="color: #657422;">keepVar=</span><span class="cn" style="color: #8f5902;">FALSE</span>){</span>
+<span id="cb1-41">  data_ <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">data.frame</span>(data)</span>
+<span id="cb1-42">  <span class="fu" style="color: #4758AB;">colnames</span>(data_) <span class="ot" style="color: #003B4F;">&lt;-</span> name</span>
+<span id="cb1-43">  <span class="cf" style="color: #003B4F;">for</span>(t <span class="cf" style="color: #003B4F;">in</span> <span class="fu" style="color: #4758AB;">unique</span>(data_[,name])) {</span>
+<span id="cb1-44">    new_col <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">paste</span>(name,t,<span class="at" style="color: #657422;">sep=</span><span class="st" style="color: #20794D;">"_"</span>)</span>
+<span id="cb1-45">    data_[,new_col] <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">ifelse</span>(data_[,name]<span class="sc" style="color: #5E5E5E;">==</span>t,<span class="dv" style="color: #AD0000;">1</span>,<span class="dv" style="color: #AD0000;">0</span>)</span>
+<span id="cb1-46">  }</span>
+<span id="cb1-47">  <span class="cf" style="color: #003B4F;">if</span>(keepVar){</span>
+<span id="cb1-48">    data <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">cbind</span>(data,data_)</span>
+<span id="cb1-49">    <span class="fu" style="color: #4758AB;">return</span>(data)</span>
+<span id="cb1-50">  }<span class="cf" style="color: #003B4F;">else</span>{</span>
+<span id="cb1-51">    <span class="fu" style="color: #4758AB;">return</span>(data_)</span>
+<span id="cb1-52">  }</span>
+<span id="cb1-53">}</span>
+<span id="cb1-54"></span>
+<span id="cb1-55"><span class="co" style="color: #5E5E5E;"># Segregating data</span></span>
+<span id="cb1-56"><span class="co" style="color: #5E5E5E;"># Aproach 1: KNN</span></span>
+<span id="cb1-57"><span class="do" style="color: #5E5E5E;
+font-style: italic;">## this is to be impleted from c for calculating distance</span></span>
+<span id="cb1-58"><span class="do" style="color: #5E5E5E;
+font-style: italic;">## and learning knn classifications</span></span>
+<span id="cb1-59"></span>
+<span id="cb1-60"><span class="do" style="color: #5E5E5E;
+font-style: italic;">## simple knn function</span></span>
+<span id="cb1-61">knn <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(mat, k){</span>
+<span id="cb1-62">  <span class="fu" style="color: #4758AB;">require</span>(fields)</span>
+<span id="cb1-63">  <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Got Data :'</span>,<span class="fu" style="color: #4758AB;">nrow</span>(mat),<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">'</span>)</span>
+<span id="cb1-64">  <span class="cf" style="color: #003B4F;">if</span>(<span class="sc" style="color: #5E5E5E;">!</span><span class="fu" style="color: #4758AB;">is.matrix</span>(mat)){</span>
+<span id="cb1-65">    mat <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">as.matrix</span>(mat)</span>
+<span id="cb1-66">  }</span>
+<span id="cb1-67">  n <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">nrow</span>(mat)</span>
+<span id="cb1-68">  <span class="cf" style="color: #003B4F;">if</span> (n <span class="sc" style="color: #5E5E5E;">&lt;=</span> k) <span class="fu" style="color: #4758AB;">stop</span>(<span class="st" style="color: #20794D;">" kNN's k can not be more than nrow(data)-1! </span></span>
+<span id="cb1-69"><span class="st" style="color: #20794D;">                   Reduce k and/or increase samples!  "</span>)</span>
+<span id="cb1-70">  neigh <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">matrix</span>(<span class="dv" style="color: #AD0000;">0</span>, <span class="at" style="color: #657422;">nrow =</span> n, <span class="at" style="color: #657422;">ncol =</span> k)</span>
+<span id="cb1-71">  <span class="do" style="color: #5E5E5E;
+font-style: italic;">## This sholud be looped in chunks or implemented in C++</span></span>
+<span id="cb1-72">  dist.mat <span class="ot" style="color: #003B4F;">&lt;-</span> fields<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">rdist</span>(mat, mat)</span>
+<span id="cb1-73">  <span class="co" style="color: #5E5E5E;"># print(dist.mat)</span></span>
+<span id="cb1-74">  <span class="cf" style="color: #003B4F;">for</span>(i <span class="cf" style="color: #003B4F;">in</span> <span class="dv" style="color: #AD0000;">1</span><span class="sc" style="color: #5E5E5E;">:</span>n) {</span>
+<span id="cb1-75">    euc.dist <span class="ot" style="color: #003B4F;">&lt;-</span> dist.mat[i, ]</span>
+<span id="cb1-76">    <span class="co" style="color: #5E5E5E;"># print(euc.dist)</span></span>
+<span id="cb1-77">    neigh[i, ] <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">order</span>(euc.dist)[<span class="dv" style="color: #AD0000;">2</span><span class="sc" style="color: #5E5E5E;">:</span>(k <span class="sc" style="color: #5E5E5E;">+</span> <span class="dv" style="color: #AD0000;">1</span>)]</span>
+<span id="cb1-78">  }</span>
+<span id="cb1-79">  </span>
+<span id="cb1-80">  <span class="fu" style="color: #4758AB;">return</span>(neigh)</span>
+<span id="cb1-81">}</span>
+<span id="cb1-82"></span>
+<span id="cb1-83">dafr <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(formula, data, model, family, <span class="at" style="color: #657422;">dec.front=</span><span class="fu" style="color: #4758AB;">c</span>(<span class="dv" style="color: #AD0000;">2</span>),<span class="at" style="color: #657422;">dec.back=</span><span class="fu" style="color: #4758AB;">c</span>(<span class="dv" style="color: #AD0000;">2</span>),</span>
+<span id="cb1-84">                 <span class="at" style="color: #657422;">knn.neighbours=</span><span class="dv" style="color: #AD0000;">5</span>,...){</span>
+<span id="cb1-85">  </span>
+<span id="cb1-86">  dname <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">paste</span>(<span class="fu" style="color: #4758AB;">deparse</span>(<span class="fu" style="color: #4758AB;">substitute</span>(formula)))</span>
+<span id="cb1-87">  <span class="co" style="color: #5E5E5E;"># definign missing values</span></span>
+<span id="cb1-88">  <span class="cf" style="color: #003B4F;">if</span> (<span class="fu" style="color: #4758AB;">missing</span>(model)){</span>
+<span id="cb1-89">    model <span class="ot" style="color: #003B4F;">&lt;-</span> glm</span>
+<span id="cb1-90">  }</span>
+<span id="cb1-91">  <span class="cf" style="color: #003B4F;">if</span> (<span class="fu" style="color: #4758AB;">missing</span>(family)){</span>
+<span id="cb1-92">    family <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="st" style="color: #20794D;">"gaussian"</span></span>
+<span id="cb1-93">  }</span>
+<span id="cb1-94">  </span>
+<span id="cb1-95">  <span class="co" style="color: #5E5E5E;"># breaking the data set for initial split</span></span>
+<span id="cb1-96">  <span class="co" style="color: #5E5E5E;"># y_actual &lt;- data[,formula$y]</span></span>
+<span id="cb1-97">  <span class="cf" style="color: #003B4F;">if</span> (<span class="sc" style="color: #5E5E5E;">!</span><span class="fu" style="color: #4758AB;">inherits</span>(formula, <span class="st" style="color: #20794D;">"formula"</span>)) {</span>
+<span id="cb1-98">    X <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">if</span> (<span class="fu" style="color: #4758AB;">is.matrix</span>(formula<span class="sc" style="color: #5E5E5E;">$</span>x))</span>
+<span id="cb1-99">      formula<span class="sc" style="color: #5E5E5E;">$</span>x</span>
+<span id="cb1-100">    <span class="cf" style="color: #003B4F;">else</span> <span class="fu" style="color: #4758AB;">model.matrix</span>(<span class="fu" style="color: #4758AB;">terms</span>(formula), <span class="fu" style="color: #4758AB;">model.frame</span>(formula))</span>
+<span id="cb1-101">    y_actual <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">if</span> (<span class="fu" style="color: #4758AB;">is.vector</span>(formula<span class="sc" style="color: #5E5E5E;">$</span>y))</span>
+<span id="cb1-102">      formula<span class="sc" style="color: #5E5E5E;">$</span>y</span>
+<span id="cb1-103">    <span class="cf" style="color: #003B4F;">else</span> <span class="fu" style="color: #4758AB;">model.response</span>(<span class="fu" style="color: #4758AB;">model.frame</span>(formula))</span>
+<span id="cb1-104">    <span class="co" style="color: #5E5E5E;"># Z &lt;- (rownames(data) %in% cut(y_actual,breaks = 10,right = TRUE))</span></span>
+<span id="cb1-105">  }</span>
+<span id="cb1-106">  <span class="cf" style="color: #003B4F;">else</span> {</span>
+<span id="cb1-107">    mf <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model.frame</span>(formula, <span class="at" style="color: #657422;">data =</span> data)</span>
+<span id="cb1-108">    y_actual <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model.response</span>(mf)</span>
+<span id="cb1-109">    X <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model.matrix</span>(formula, <span class="at" style="color: #657422;">data =</span> data)</span>
+<span id="cb1-110">    <span class="co" style="color: #5E5E5E;"># Z &lt;- (rownames(data) %in% cut(y_actual,breaks = 10,right = TRUE))</span></span>
+<span id="cb1-111">  }</span>
+<span id="cb1-112">  </span>
+<span id="cb1-113">  <span class="co" style="color: #5E5E5E;"># making original base model</span></span>
+<span id="cb1-114">  mod_orig <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model</span>(<span class="at" style="color: #657422;">formula =</span> formula ,<span class="at" style="color: #657422;">data =</span> data, <span class="at" style="color: #657422;">family =</span> family,<span class="at" style="color: #657422;">...=</span>...)</span>
+<span id="cb1-115">  y_orig <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">predict</span>(mod_orig,data)</span>
+<span id="cb1-116">  </span>
+<span id="cb1-117">  <span class="co" style="color: #5E5E5E;"># geting mape curve</span></span>
+<span id="cb1-118">  results <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">data.frame</span>(<span class="at" style="color: #657422;">actuals=</span>y_actual,<span class="at" style="color: #657422;">original=</span>y_orig)</span>
+<span id="cb1-119">  results <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">decileBinner</span>(results,<span class="st" style="color: #20794D;">"actuals"</span>,<span class="at" style="color: #657422;">splitname =</span> <span class="st" style="color: #20794D;">"splits"</span>)</span>
+<span id="cb1-120">  <span class="fu" style="color: #4758AB;">rownames</span>(results) <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">rownames</span>(data)</span>
+<span id="cb1-121">  <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Actual and Prediction by Single Model :</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">'</span>)</span>
+<span id="cb1-122">  <span class="fu" style="color: #4758AB;">print</span>(results)</span>
+<span id="cb1-123">  curve_ape <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">summarize</span>(<span class="fu" style="color: #4758AB;">group_by</span>(results,splits),<span class="fu" style="color: #4758AB;">mape</span>(actuals,original,<span class="at" style="color: #657422;">asmean=</span><span class="cn" style="color: #8f5902;">TRUE</span>))</span>
+<span id="cb1-124">  curve_ape <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">data.frame</span>(curve_ape)</span>
+<span id="cb1-125">  <span class="fu" style="color: #4758AB;">colnames</span>(curve_ape) <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>(<span class="st" style="color: #20794D;">"splits"</span>,<span class="st" style="color: #20794D;">"mape"</span>)</span>
+<span id="cb1-126">  <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Splits MAPE distributions:</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">'</span>)</span>
+<span id="cb1-127">  <span class="fu" style="color: #4758AB;">print</span>(curve_ape)</span>
+<span id="cb1-128">  <span class="fu" style="color: #4758AB;">plot</span>(curve_ape,<span class="at" style="color: #657422;">type=</span><span class="st" style="color: #20794D;">"b"</span>,<span class="at" style="color: #657422;">main =</span><span class="st" style="color: #20794D;">" Plot of Unsplitted Absolute Percentage Error"</span>,</span>
+<span id="cb1-129">       <span class="at" style="color: #657422;">ylab =</span> <span class="st" style="color: #20794D;">"Mean Absolute Percentage Error"</span>,<span class="at" style="color: #657422;">xlab=</span><span class="st" style="color: #20794D;">"Split Index"</span>)</span>
+<span id="cb1-130">  </span>
+<span id="cb1-131">  <span class="co" style="color: #5E5E5E;"># looking at split distirbution</span></span>
+<span id="cb1-132">  <span class="fu" style="color: #4758AB;">hist</span>(results[,<span class="st" style="color: #20794D;">"splits"</span>],<span class="at" style="color: #657422;">main =</span> <span class="st" style="color: #20794D;">"Split Distribution"</span>,<span class="at" style="color: #657422;">xlab =</span> <span class="st" style="color: #20794D;">"Split Index"</span>,<span class="at" style="color: #657422;">breaks =</span> <span class="dv" style="color: #AD0000;">10</span>)</span>
+<span id="cb1-133">  <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;"> Early Failure Region : '</span>,dec.front,<span class="st" style="color: #20794D;">" Wear Out Failure Region :"</span>,dec.back,<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">'</span>)</span>
+<span id="cb1-134">  </span>
+<span id="cb1-135">  <span class="co" style="color: #5E5E5E;"># Breaking the dataset by deciles and remodelling</span></span>
+<span id="cb1-136">  <span class="co" style="color: #5E5E5E;"># vectorising the deciles</span></span>
+<span id="cb1-137">  <span class="cf" style="color: #003B4F;">if</span>(<span class="fu" style="color: #4758AB;">NROW</span>(dec.front)<span class="sc" style="color: #5E5E5E;">==</span><span class="dv" style="color: #AD0000;">1</span><span class="sc" style="color: #5E5E5E;">&amp;!</span><span class="fu" style="color: #4758AB;">is.null</span>(dec.front)){</span>
+<span id="cb1-138">    dec.front <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">seq</span>(<span class="dv" style="color: #AD0000;">1</span>,dec.front)</span>
+<span id="cb1-139">    <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Front Splits:'</span>,dec.front)</span>
+<span id="cb1-140">    <span class="co" style="color: #5E5E5E;"># print(results[results$splits %in% dec.front,])</span></span>
+<span id="cb1-141">    front_idx <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">row.names</span>(results[results<span class="sc" style="color: #5E5E5E;">$</span>splits <span class="sc" style="color: #5E5E5E;">%in%</span> dec.front,])</span>
+<span id="cb1-142">    <span class="co" style="color: #5E5E5E;"># data_front &lt;- data[,]</span></span>
+<span id="cb1-143">    <span class="co" style="color: #5E5E5E;"># print(knn(data_front,knn.neighbours))</span></span>
+<span id="cb1-144">    <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">"</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Front Data has: "</span>,</span>
+<span id="cb1-145">        <span class="fu" style="color: #4758AB;">NROW</span>(front_idx),<span class="st" style="color: #20794D;">" rows"</span>)</span>
+<span id="cb1-146">  }<span class="cf" style="color: #003B4F;">else</span>{</span>
+<span id="cb1-147">    dec.front <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>()</span>
+<span id="cb1-148">  }</span>
+<span id="cb1-149">  <span class="cf" style="color: #003B4F;">if</span>(<span class="fu" style="color: #4758AB;">NROW</span>(dec.back)<span class="sc" style="color: #5E5E5E;">==</span><span class="dv" style="color: #AD0000;">1</span><span class="sc" style="color: #5E5E5E;">&amp;!</span><span class="fu" style="color: #4758AB;">is.null</span>(dec.back)){</span>
+<span id="cb1-150">    dec.back <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">seq</span>(<span class="dv" style="color: #AD0000;">10</span>,(<span class="dv" style="color: #AD0000;">11</span><span class="sc" style="color: #5E5E5E;">-</span>dec.back))</span>
+<span id="cb1-151">    <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">'</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Back Splits:'</span>,dec.back)</span>
+<span id="cb1-152">    <span class="co" style="color: #5E5E5E;"># data_back &lt;- data[rownames(results[results$splits %in% dec.back,]),]</span></span>
+<span id="cb1-153">    back_idx <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">row.names</span>(results[results<span class="sc" style="color: #5E5E5E;">$</span>splits <span class="sc" style="color: #5E5E5E;">%in%</span> dec.back,])</span>
+<span id="cb1-154">    <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">"</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Back Data has: "</span>,<span class="fu" style="color: #4758AB;">NROW</span>(back_idx),<span class="st" style="color: #20794D;">" rows"</span>)</span>
+<span id="cb1-155">  }<span class="cf" style="color: #003B4F;">else</span>{</span>
+<span id="cb1-156">    dec.back <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>()</span>
+<span id="cb1-157">  }</span>
+<span id="cb1-158">  </span>
+<span id="cb1-159">  <span class="co" style="color: #5E5E5E;"># data_mid &lt;- data[rownames(results[!results$splits %in% c(dec.back,dec.front),]),]</span></span>
+<span id="cb1-160">  mid_idx <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">rownames</span>(results[<span class="sc" style="color: #5E5E5E;">!</span>results<span class="sc" style="color: #5E5E5E;">$</span>splits <span class="sc" style="color: #5E5E5E;">%in%</span> <span class="fu" style="color: #4758AB;">c</span>(dec.back,dec.front),])</span>
+<span id="cb1-161">  <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">"</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Mid Data has: "</span>,</span>
+<span id="cb1-162">      <span class="fu" style="color: #4758AB;">NROW</span>(mid_idx),<span class="st" style="color: #20794D;">" rows</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Data has: "</span>,<span class="fu" style="color: #4758AB;">nrow</span>(data),<span class="st" style="color: #20794D;">" rows"</span>)</span>
+<span id="cb1-163">  </span>
+<span id="cb1-164">  <span class="co" style="color: #5E5E5E;"># generating splitted models and calculating mapes</span></span>
+<span id="cb1-165">  pred_dec <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>()</span>
+<span id="cb1-166">  models <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">list</span>()</span>
+<span id="cb1-167">  <span class="cf" style="color: #003B4F;">if</span>(<span class="fu" style="color: #4758AB;">length</span>(dec.front)<span class="sc" style="color: #5E5E5E;">&gt;</span><span class="dv" style="color: #AD0000;">0</span>){</span>
+<span id="cb1-168">    </span>
+<span id="cb1-169">    mod_front <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model</span>(<span class="at" style="color: #657422;">formula =</span> formula ,<span class="at" style="color: #657422;">data =</span> data[front_idx,], <span class="at" style="color: #657422;">family =</span> family,<span class="at" style="color: #657422;">...=</span>...)</span>
+<span id="cb1-170">    models<span class="sc" style="color: #5E5E5E;">$</span>Front_Model <span class="ot" style="color: #003B4F;">&lt;-</span> mod_front</span>
+<span id="cb1-171">    <span class="co" style="color: #5E5E5E;"># cat(nrow(dataf &lt;- data[front_idx,]))</span></span>
+<span id="cb1-172">    models<span class="sc" style="color: #5E5E5E;">$</span>knn.front <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">knn</span>(data[front_idx,],knn.neighbours)</span>
+<span id="cb1-173">    pred_front <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">predict</span>(mod_front,data[front_idx,])</span>
+<span id="cb1-174">    pred_dec <span class="ot" style="color: #003B4F;">&lt;-</span> pred_front</span>
+<span id="cb1-175">  }</span>
+<span id="cb1-176">  <span class="cf" style="color: #003B4F;">if</span>(<span class="fu" style="color: #4758AB;">NROW</span>(mid_idx)<span class="sc" style="color: #5E5E5E;">&gt;</span><span class="dv" style="color: #AD0000;">0</span>){</span>
+<span id="cb1-177">    mod_mid <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model</span>(<span class="at" style="color: #657422;">formula =</span> formula ,<span class="at" style="color: #657422;">data =</span> data[mid_idx,], <span class="at" style="color: #657422;">family =</span> family,<span class="at" style="color: #657422;">...=</span>...)</span>
+<span id="cb1-178">    models<span class="sc" style="color: #5E5E5E;">$</span>Mid_Model <span class="ot" style="color: #003B4F;">&lt;-</span> mod_mid</span>
+<span id="cb1-179">    models<span class="sc" style="color: #5E5E5E;">$</span>knn.mid <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">knn</span>(data[mid_idx,],knn.neighbours)</span>
+<span id="cb1-180">    pred_mid <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">predict</span>(mod_mid,data[mid_idx,])</span>
+<span id="cb1-181">    pred_dec <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>(pred_dec,pred_mid)</span>
+<span id="cb1-182">  }</span>
+<span id="cb1-183">  <span class="cf" style="color: #003B4F;">if</span>(<span class="fu" style="color: #4758AB;">length</span>(dec.back)<span class="sc" style="color: #5E5E5E;">&gt;</span><span class="dv" style="color: #AD0000;">0</span>){</span>
+<span id="cb1-184">    mod_back <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">model</span>(<span class="at" style="color: #657422;">formula =</span> formula ,<span class="at" style="color: #657422;">data =</span> data[back_idx,], <span class="at" style="color: #657422;">family =</span> family,<span class="at" style="color: #657422;">...=</span>...)</span>
+<span id="cb1-185">    models<span class="sc" style="color: #5E5E5E;">$</span>Back_Model <span class="ot" style="color: #003B4F;">&lt;-</span> mod_back</span>
+<span id="cb1-186">    models<span class="sc" style="color: #5E5E5E;">$</span>knn.back <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">knn</span>(data[back_idx,],knn.neighbours)</span>
+<span id="cb1-187">    pred_back <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">predict</span>(mod_back,data[back_idx,])</span>
+<span id="cb1-188">    pred_dec <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>(pred_dec,pred_back)</span>
+<span id="cb1-189">  }</span>
+<span id="cb1-190">  <span class="fu" style="color: #4758AB;">cat</span>(<span class="st" style="color: #20794D;">"</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">Deciled Prediction has:"</span>,<span class="fu" style="color: #4758AB;">NROW</span>(pred_dec),<span class="st" style="color: #20794D;">" value </span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;">"</span>)</span>
+<span id="cb1-191">  <span class="co" style="color: #5E5E5E;"># Replotting curve of mape</span></span>
+<span id="cb1-192">  results[,<span class="st" style="color: #20794D;">"dec_pred"</span>] <span class="ot" style="color: #003B4F;">&lt;-</span> pred_dec</span>
+<span id="cb1-193">  <span class="fu" style="color: #4758AB;">print</span>(results)</span>
+<span id="cb1-194">  curve_ape_dec <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">summarize</span>(<span class="fu" style="color: #4758AB;">group_by</span>(results,splits),<span class="fu" style="color: #4758AB;">mape</span>(actuals,dec_pred,<span class="at" style="color: #657422;">asmean=</span><span class="cn" style="color: #8f5902;">TRUE</span>))</span>
+<span id="cb1-195">  curve_ape_dec <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">data.frame</span>(curve_ape_dec)</span>
+<span id="cb1-196">  <span class="fu" style="color: #4758AB;">colnames</span>(curve_ape_dec) <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">c</span>(<span class="st" style="color: #20794D;">"split"</span>,<span class="st" style="color: #20794D;">"mape_dec"</span>)</span>
+<span id="cb1-197">  curve_ape <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">cbind</span>(curve_ape,<span class="fu" style="color: #4758AB;">round</span>(curve_ape_dec[[<span class="st" style="color: #20794D;">"mape_dec"</span>]],<span class="dv" style="color: #AD0000;">2</span>))</span>
+<span id="cb1-198">  <span class="fu" style="color: #4758AB;">colnames</span>(curve_ape)[<span class="dv" style="color: #AD0000;">3</span>]  <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="st" style="color: #20794D;">"mape_dec"</span></span>
+<span id="cb1-199">  <span class="fu" style="color: #4758AB;">print</span>(curve_ape)</span>
+<span id="cb1-200">  <span class="fu" style="color: #4758AB;">plot</span>(curve_ape_dec,<span class="at" style="color: #657422;">type=</span><span class="st" style="color: #20794D;">"b"</span>,<span class="at" style="color: #657422;">main =</span><span class="st" style="color: #20794D;">" Plot of Splitted Absolute Percentage Error"</span>,</span>
+<span id="cb1-201">       <span class="at" style="color: #657422;">ylab =</span> <span class="st" style="color: #20794D;">"Mean Absolute Percentage Error"</span>,<span class="at" style="color: #657422;">xlab=</span><span class="st" style="color: #20794D;">"Split Index"</span>)</span>
+<span id="cb1-202">  </span>
+<span id="cb1-203">  </span>
+<span id="cb1-204">  <span class="co" style="color: #5E5E5E;"># models &lt;- list(exists(mod_front),exists(mod_mid),exists(mod_back))</span></span>
+<span id="cb1-205">  dafr <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">list</span>(<span class="at" style="color: #657422;">formula =</span> dname,<span class="at" style="color: #657422;">models=</span>models,<span class="at" style="color: #657422;">results=</span> results[,<span class="fu" style="color: #4758AB;">c</span>(<span class="dv" style="color: #AD0000;">3</span>,<span class="dv" style="color: #AD0000;">1</span>,<span class="dv" style="color: #AD0000;">2</span>,<span class="dv" style="color: #AD0000;">4</span>)],</span>
+<span id="cb1-206">               <span class="at" style="color: #657422;">mapes=</span>curve_ape,<span class="at" style="color: #657422;">split.freq=</span><span class="fu" style="color: #4758AB;">table</span>(results[,<span class="st" style="color: #20794D;">"splits"</span>]))</span>
+<span id="cb1-207">  <span class="fu" style="color: #4758AB;">return</span>(dafr)</span>
+<span id="cb1-208">  </span>
+<span id="cb1-209">}</span></code></pre></div>
+</details>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" aria-labelledby="tabset-1-3-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="do" style="color: #5E5E5E;
+font-style: italic;">## Testing Distribution Assertive Regression with Boston Housing Data</span></span>
+<span id="cb2-2"><span class="fu" style="color: #4758AB;">library</span>(dplyr)</span>
+<span id="cb2-3"><span class="fu" style="color: #4758AB;">library</span>(mlbench)</span>
+<span id="cb2-4"></span>
+<span id="cb2-5"><span class="fu" style="color: #4758AB;">data</span>(<span class="st" style="color: #20794D;">"BostonHousing"</span>)</span>
+<span id="cb2-6">df <span class="ot" style="color: #003B4F;">&lt;-</span> BostonHousing[<span class="fu" style="color: #4758AB;">order</span>(BostonHousing[,<span class="st" style="color: #20794D;">'medv'</span>]),]</span>
+<span id="cb2-7"></span>
+<span id="cb2-8"><span class="co" style="color: #5E5E5E;"># Using DAR with lm Model</span></span>
+<span id="cb2-9">mod_dfar <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">dafr</span>(medv <span class="sc" style="color: #5E5E5E;">~</span>. , <span class="at" style="color: #657422;">data =</span> df,<span class="at" style="color: #657422;">dec.front =</span> <span class="dv" style="color: #AD0000;">3</span>,<span class="at" style="color: #657422;">dec.back =</span> <span class="dv" style="color: #AD0000;">3</span>)</span>
+<span id="cb2-10"><span class="fu" style="color: #4758AB;">summary</span>(mod_dfar)</span>
+<span id="cb2-11">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>call</span>
+<span id="cb2-12">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>models</span>
+<span id="cb2-13">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>results</span>
+<span id="cb2-14">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>mapes</span>
+<span id="cb2-15">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>split.freq</span>
+<span id="cb2-16"></span>
+<span id="cb2-17"><span class="co" style="color: #5E5E5E;"># Using DAR with lm Model</span></span>
+<span id="cb2-18">mod_dfar <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">dafr</span>(medv <span class="sc" style="color: #5E5E5E;">~</span>. , <span class="at" style="color: #657422;">data =</span> df, <span class="at" style="color: #657422;">dec.front =</span> <span class="dv" style="color: #AD0000;">3</span>, <span class="at" style="color: #657422;">dec.back =</span> <span class="dv" style="color: #AD0000;">3</span>,<span class="at" style="color: #657422;">model =</span> glm)</span>
+<span id="cb2-19"></span>
+<span id="cb2-20"></span>
+<span id="cb2-21"><span class="co" style="color: #5E5E5E;"># Plotting which creates plots in the blog post</span></span>
+<span id="cb2-22"><span class="fu" style="color: #4758AB;">library</span>(ggplot2)</span>
+<span id="cb2-23"><span class="fu" style="color: #4758AB;">library</span>(ggthemes)</span>
+<span id="cb2-24"><span class="fu" style="color: #4758AB;">library</span>(scales)</span>
+<span id="cb2-25"></span>
+<span id="cb2-26"></span>
+<span id="cb2-27"><span class="co" style="color: #5E5E5E;"># The Bath Tub Curve</span></span>
+<span id="cb2-28">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>mapes <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-29">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x=</span>splits,<span class="at" style="color: #657422;">y=</span>mape)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-30">  <span class="fu" style="color: #4758AB;">geom_point</span>(<span class="at" style="color: #657422;">size=</span><span class="dv" style="color: #AD0000;">3</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-31">  <span class="fu" style="color: #4758AB;">geom_line</span>(<span class="at" style="color: #657422;">size=</span><span class="dv" style="color: #AD0000;">1</span>,<span class="at" style="color: #657422;">linetype=</span><span class="st" style="color: #20794D;">'dashed'</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-32">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">breaks =</span> <span class="dv" style="color: #AD0000;">1</span><span class="sc" style="color: #5E5E5E;">:</span><span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-33">  <span class="fu" style="color: #4758AB;">theme_light</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-34">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">'Plot of Unsplitted Absolute Percentage Error'</span>,</span>
+<span id="cb2-35">       <span class="at" style="color: #657422;">x=</span><span class="st" style="color: #20794D;">"Split Index"</span>,</span>
+<span id="cb2-36">       <span class="at" style="color: #657422;">y=</span><span class="st" style="color: #20794D;">"% MAPE Value"</span>,</span>
+<span id="cb2-37">       <span class="at" style="color: #657422;">caption =</span> <span class="st" style="color: #20794D;">"Data Boston Housing (mlbench)</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;"> Model: Linear Model with Default Parameters"</span>)</span>
+<span id="cb2-38"></span>
+<span id="cb2-39"></span>
+<span id="cb2-40"><span class="co" style="color: #5E5E5E;"># The shaded region with unsplitted regression</span></span>
+<span id="cb2-41">mean_mape <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">round</span>(<span class="fu" style="color: #4758AB;">mean</span>(mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>mapes<span class="sc" style="color: #5E5E5E;">$</span>mape))</span>
+<span id="cb2-42">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>mapes <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-43">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x=</span>splits,<span class="at" style="color: #657422;">y=</span>mape)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-44">  <span class="fu" style="color: #4758AB;">geom_point</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-45">  <span class="fu" style="color: #4758AB;">geom_line</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-46">  <span class="fu" style="color: #4758AB;">geom_hline</span>(<span class="at" style="color: #657422;">yintercept =</span> mean_mape, <span class="at" style="color: #657422;">linetype=</span><span class="st" style="color: #20794D;">"twodash"</span>,<span class="at" style="color: #657422;">size=</span><span class="fl" style="color: #AD0000;">1.1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-47">  <span class="fu" style="color: #4758AB;">geom_rect</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">xmin =</span> <span class="dv" style="color: #AD0000;">1</span>, <span class="at" style="color: #657422;">xmax =</span> <span class="fl" style="color: #AD0000;">3.5</span>, <span class="at" style="color: #657422;">ymin =</span> <span class="sc" style="color: #5E5E5E;">-</span><span class="cn" style="color: #8f5902;">Inf</span>, <span class="at" style="color: #657422;">ymax =</span> <span class="cn" style="color: #8f5902;">Inf</span>),</span>
+<span id="cb2-48">            <span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"red"</span>, <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.03</span>)<span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-49">  <span class="fu" style="color: #4758AB;">geom_rect</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">xmin =</span> <span class="fl" style="color: #AD0000;">7.5</span>, <span class="at" style="color: #657422;">xmax =</span> <span class="dv" style="color: #AD0000;">10</span>, <span class="at" style="color: #657422;">ymin =</span> <span class="sc" style="color: #5E5E5E;">-</span><span class="cn" style="color: #8f5902;">Inf</span>, <span class="at" style="color: #657422;">ymax =</span> <span class="cn" style="color: #8f5902;">Inf</span>),</span>
+<span id="cb2-50">            <span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"red"</span>, <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.03</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-51">  <span class="fu" style="color: #4758AB;">annotate</span>(<span class="at" style="color: #657422;">geom =</span> <span class="st" style="color: #20794D;">"label"</span>, <span class="at" style="color: #657422;">x =</span> <span class="fl" style="color: #AD0000;">5.5</span>, <span class="at" style="color: #657422;">y =</span> <span class="dv" style="color: #AD0000;">20</span>, </span>
+<span id="cb2-52">           <span class="at" style="color: #657422;">label =</span> <span class="st" style="color: #20794D;">"Avg MAPE : 18%"</span>,</span>
+<span id="cb2-53">           <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"black"</span>,<span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">4</span>)<span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-54">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">breaks =</span> <span class="dv" style="color: #AD0000;">1</span><span class="sc" style="color: #5E5E5E;">:</span><span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-55">  <span class="fu" style="color: #4758AB;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-56">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">'Plot of Unsplitted Absolute Percentage Error'</span>,</span>
+<span id="cb2-57">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Shaded regions indicate MAPE with High Values"</span>,</span>
+<span id="cb2-58">       <span class="at" style="color: #657422;">x=</span><span class="st" style="color: #20794D;">"Split Index"</span>,</span>
+<span id="cb2-59">       <span class="at" style="color: #657422;">y=</span><span class="st" style="color: #20794D;">"% MAPE Value"</span>,</span>
+<span id="cb2-60">       <span class="at" style="color: #657422;">caption =</span> <span class="st" style="color: #20794D;">"Data Boston Housing (mlbench)</span><span class="sc" style="color: #5E5E5E;">\n</span><span class="st" style="color: #20794D;"> Model: Linear Model with Default Parameters"</span>)</span>
+<span id="cb2-61"></span>
+<span id="cb2-62"></span>
+<span id="cb2-63"><span class="co" style="color: #5E5E5E;"># The shaded region with splitted regression</span></span>
+<span id="cb2-64">mean_mape_dafr <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">round</span>(<span class="fu" style="color: #4758AB;">mean</span>(mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>mapes<span class="sc" style="color: #5E5E5E;">$</span>mape_dec))</span>
+<span id="cb2-65"></span>
+<span id="cb2-66">mod_dfar<span class="sc" style="color: #5E5E5E;">$</span>mapes <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-67">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x=</span>splits,<span class="at" style="color: #657422;">y=</span>mape_dec)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-68">  <span class="fu" style="color: #4758AB;">geom_point</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-69">  <span class="fu" style="color: #4758AB;">geom_line</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-70">  <span class="fu" style="color: #4758AB;">geom_hline</span>(<span class="at" style="color: #657422;">yintercept =</span> mean_mape_dafr,<span class="at" style="color: #657422;">linetype=</span><span class="st" style="color: #20794D;">"twodash"</span>,<span class="at" style="color: #657422;">size=</span><span class="fl" style="color: #AD0000;">1.05</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-71">  <span class="fu" style="color: #4758AB;">geom_rect</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">xmin =</span> <span class="dv" style="color: #AD0000;">1</span>, <span class="at" style="color: #657422;">xmax =</span> <span class="fl" style="color: #AD0000;">3.5</span>, <span class="at" style="color: #657422;">ymin =</span> <span class="sc" style="color: #5E5E5E;">-</span><span class="cn" style="color: #8f5902;">Inf</span>, <span class="at" style="color: #657422;">ymax =</span> <span class="cn" style="color: #8f5902;">Inf</span>),</span>
+<span id="cb2-72">            <span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"purple"</span>, <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.03</span>)<span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-73">  <span class="fu" style="color: #4758AB;">geom_rect</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">xmin =</span> <span class="fl" style="color: #AD0000;">7.5</span>, <span class="at" style="color: #657422;">xmax =</span> <span class="dv" style="color: #AD0000;">10</span>, <span class="at" style="color: #657422;">ymin =</span> <span class="sc" style="color: #5E5E5E;">-</span><span class="cn" style="color: #8f5902;">Inf</span>, <span class="at" style="color: #657422;">ymax =</span> <span class="cn" style="color: #8f5902;">Inf</span>),</span>
+<span id="cb2-74">            <span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"purple"</span>, <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.03</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-75">  <span class="fu" style="color: #4758AB;">annotate</span>(<span class="at" style="color: #657422;">geom =</span> <span class="st" style="color: #20794D;">"label"</span>, <span class="at" style="color: #657422;">x =</span> <span class="fl" style="color: #AD0000;">5.5</span>, <span class="at" style="color: #657422;">y =</span> <span class="fl" style="color: #AD0000;">12.5</span>, </span>
+<span id="cb2-76">           <span class="at" style="color: #657422;">label =</span> <span class="st" style="color: #20794D;">"Avg MAPE : 11%"</span>,</span>
+<span id="cb2-77">           <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"black"</span>,<span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">4</span>)<span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-78">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">breaks =</span> <span class="dv" style="color: #AD0000;">1</span><span class="sc" style="color: #5E5E5E;">:</span><span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-79">  <span class="fu" style="color: #4758AB;">theme_bw</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-80">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">'Plot of Splitted Absolute Percentage Error with Distributed Assertive Regression'</span>,</span>
+<span id="cb2-81">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Shaded regions indicate MAPE for Front Decile: 3 &amp; Back Decile: 3"</span>,</span>
+<span id="cb2-82">       <span class="at" style="color: #657422;">x=</span><span class="st" style="color: #20794D;">"Split Index"</span>,</span>
+<span id="cb2-83">       <span class="at" style="color: #657422;">y=</span><span class="st" style="color: #20794D;">"% MAPE Value"</span>,</span>
+<span id="cb2-84">       <span class="at" style="color: #657422;">caption =</span> <span class="st" style="color: #20794D;">"Data Boston Housing (mlbench)</span></span>
+<span id="cb2-85"><span class="st" style="color: #20794D;">                  Model: Linear Model with Default Parameters"</span>)</span></code></pre></div>
+</details>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{kapila2018,
+  author = {Jitin Kapila},
+  editor = {},
+  title = {Adaptive {Regression}},
+  date = {2018-05-01},
+  url = {https://www.jitinkapila.com/posts/20180501-adaptive-regression},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-kapila2018" class="csl-entry quarto-appendix-citeas">
+Jitin Kapila. 2018. <span>“Adaptive Regression.”</span> May 1, 2018. <a href="https://www.jitinkapila.com/posts/20180501-adaptive-regression">https://www.jitinkapila.com/posts/20180501-adaptive-regression</a>.
+</div></div></section></div> ]]></description>
+  <category>research</category>
+  <category>code</category>
+  <category>analysis</category>
+  <category>r</category>
+  <guid>https://www.jitinkapila.com/posts/20180501-adaptive-regression/index.html</guid>
+  <pubDate>Mon, 30 Apr 2018 18:30:00 GMT</pubDate>
+  <media:content url="https://www.jitinkapila.com/posts/20180501-adaptive-regression/Post_Mape_Plot.png" medium="image" type="image/png" height="75" width="144"/>
+</item>
+<item>
+  <title>{B4F502887207:/posts/20220902-linear-methods-for-classification/index.html}</title>
+  <link>https://www.jitinkapila.com/posts/20220902-linear-methods-for-classification/index.html</link>
+  <description>{B4F502887207:/posts/20220902-linear-methods-for-classification/index.html}</description>
+  <guid>https://www.jitinkapila.com/posts/20220902-linear-methods-for-classification/index.html</guid>
+  <pubDate>Sun, 04 Sep 2022 13:19:55 GMT</pubDate>
+</item>
+</channel>
+</rss>

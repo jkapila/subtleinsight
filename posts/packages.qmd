@@ -1,0 +1,43 @@
+---
+title: "Packages"
+date: 2020-05-23T17:50:31+05:30
+description: Some off the shelf work
+categories: [portfolio, development]
+
+title-block-banner: true
+image: https://unsplash.com/photos/npxXWgQ33ZQ/download?force=true&w=1920
+image-alt: "Image by [_Glenn Carstens-Peters_](https://unsplash.com/@glenncarstenspeters) at [Unsplash](https://unsplash.com/)"
+# Enable CC licence appendix
+license: "CC BY"
+
+# Default author
+author:
+  - name: Jitin Kapila
+    url: https://www.jitinkapila.com
+
+# Default fields for citation
+citation: true
+
+filters:
+   - lightbox
+lightbox: auto
+
+---
+
+
+
+> **featuregen** is a package that holds many common feature generating facilities for Predictive Modelling purposes. Please read docs to for example usage.
+> Refer [Docs](https://jkapila.github.io/featuregen/). More about plot following grouped transformation [here](https://jkapila.github.io/featuregen/example_gallery/index.html).
+
+![Grouped Trasformation](https://jkapila.github.io/featuregen/_images/sphx_glr_plot_grouped_transformation_001.png)
+
+<br>
+<br>
+<br>
+
+***Old Work***
+
+* Misc Work - Lot of prior work but not well document can be found at [Github](https://github.com/jkapila/paper-codebase)
+* Pygemodels - A package for fitting Growth and Epidemiology Models in Python [Github](https://github.com/jkapila/pygemodels)
+* VCVN - R package for Variable  Selection, Curve Fitting, Variable Conversion and Normalization [Github](https://github.com/jkapila/vcvn)
+* Simulator Series in R - A Curve and Distribution Simulator in R [Github](https://github.com/jkapila/SimulatorInR) 

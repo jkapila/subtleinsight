@@ -1,0 +1,14 @@
+{
+  "hash": "89b59efd9f36275e29e06208bd2400f5",
+  "result": {
+    "markdown": "---\ntitle: \"Subtle Insight\"\nsubtitle: A data science blog by Jitin Kapila\nlisting:\n  feed: true\n  contents: posts\n  sort: \"date desc\"\n  type: default\n  categories: true\n  sort-ui: false\n  filter-ui: false\npage-layout: full\ntitle-block-banner: true\nimage: /images/favicon-32x32.png\n---\n\n::: {.cell}\n\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "posts/20180501-adaptive-regression/index.qmd": {
+    "index.html": "f1490e97"
+  },
+  "index.qmd": {
+    "index.html": "1c8970b6"
+  },
+  "posts/post-with-code/index.qmd": {
+    "index.html": "cbd40d46"
+  },
+  "posts/welcome/index.qmd": {
+    "index.html": "baea7425"
+  },
+  "about.qmd": {
+    "about.html": "33911505"
+  },
+  "posts/packages.qmd": {
+    "packages.html": "8aa68c52"
+  },
+  "posts/20210821-flow-to-test-your-hypothesis/index.qmd": {
+    "index.html": "57cf2bb5"
+  },
+  "posts/20220902-linear-methods-for-classification/index.qmd": {
+    "index.html": "794e5165"
+  }
+}

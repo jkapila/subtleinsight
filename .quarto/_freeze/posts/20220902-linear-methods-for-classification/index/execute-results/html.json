@@ -1,0 +1,11 @@
+{
+  "hash": "195ec40c7367d949c6319b6545ee399b",
+  "result": {
+    "markdown": "---\ntitle: \"Linear methods of Classification\"\nsubtitle: Some learning from The Elements of Statitical Learning by Hastie, Tibshirani Friedman 2nd ed\ndescription: Not replicating but finding ways to implement it in python from scratch\n\n# Enable CC licence appendix\nlicense: \"CC BY\"\n\n# Default author\nauthor:\n  - name: Jitin Kapila\n    url: https://www.jitinkapila.com\n\n# Default fields for citation\ncitation: true\n\n# date and draft\ndate: \"2022-09-02\"\n\n\n# format\nformat: \n  html:\n    toc: true\n    code-fold: true\n    html-math-method: 'webtex'\n    fig-cap-location: bottom\n    cap-location: bottom\n    \nexecute:\n  eval: false\n  echo: true\n  warning: true\n\n# title-block-banner: images/banner.jpeg\ntitle-block-banner: true\nimage: https://unsplash.com/photos/fUnfEz3VLv4/download?force=true&w=1920\nimage-alt: Image by [_Graham_](https://unsplash.com/@freedomstudios) at [Unsplash](https://unsplash.com/)\n\n# category and keywords\ncategories: [classification, linear methods, python, implementation]\ntags:\n    - hypothesis\n    - linear methods\n    - implementation\nkeywords: [classification, linear methods, python, implementation, scratch implementation, analysis, tests, datascience]\n\n# Engine if python\njupyter: python3\nfreeze: true\n\nfilters:\n   - lightbox\nlightbox: auto\n---\n\n# This is normal qmd file\n\nFor a demonstration of a line plot on a polar axis, see @fig-polar.\n\n::: {.cell execution_count=1}\n``` {.python .cell-code}\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n```\n\n::: {.cell-output .cell-output-display}\n![A line plot on a polar axis](index_files/figure-html/fig-polar-output-1.png){#fig-polar width=443 height=432}\n:::\n:::\n\n\n# hope new work would come here\n\nasn dsome more text\n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

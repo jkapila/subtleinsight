@@ -1,0 +1,29 @@
+project:
+  type: website
+
+website:
+  title: "Subtle Insight"
+  site-url: https://subtleinsight.netlify.app
+  repo-url: https://github.com/jkapila/subtleinsight
+  open-graph: true
+  twitter-card:
+    creator: "@jitinkapila"
+    card-style: summary_large_image
+  navbar:
+    right:
+      - about.qmd
+      - icon: twitter
+        href: https://twitter.com/jitinkapila
+      - icon: linkedin
+        href: https://linkedin.com/in/jitinkapila
+      - icon: github
+        href: https://github.com/jkapila
+format:
+  html:
+    theme: 
+      light: litera
+      dark: darkly
+    css: styles.css
+    include-after-body: plausible.html
+
+

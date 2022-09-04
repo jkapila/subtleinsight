@@ -1,0 +1,83 @@
+---
+title: "Linear methods of Classification"
+subtitle: Some learning from The Elements of Statitical Learning by Hastie, Tibshirani Friedman 2nd ed
+description: Not replicating but finding ways to implement it in python from scratch
+
+# Enable CC licence appendix
+license: "CC BY"
+
+# Default author
+author:
+  - name: Jitin Kapila
+    url: https://www.jitinkapila.com
+
+# Default fields for citation
+citation: true
+
+# date and draft
+date: "2022-09-02"
+
+
+# format
+format: 
+  html:
+    toc: true
+    code-fold: true
+    html-math-method: 'webtex'
+    fig-cap-location: bottom
+    cap-location: bottom
+    
+execute:
+  eval: false
+  echo: true
+  warning: true
+
+# title-block-banner: images/banner.jpeg
+title-block-banner: true
+image: https://unsplash.com/photos/fUnfEz3VLv4/download?force=true&w=1920
+image-alt: Image by [_Graham_](https://unsplash.com/@freedomstudios) at [Unsplash](https://unsplash.com/)
+
+# category and keywords
+categories: [classification, linear methods, python, implementation]
+tags:
+    - hypothesis
+    - linear methods
+    - implementation
+keywords: [classification, linear methods, python, implementation, scratch implementation, analysis, tests, datascience]
+
+# Engine if python
+jupyter: python3
+freeze: true
+
+filters:
+   - lightbox
+lightbox: auto
+---
+
+
+# This is normal qmd file
+
+For a demonstration of a line plot on a polar axis, see @fig-polar.
+
+```{python}
+#| label: fig-polar
+#| fig-cap: "A line plot on a polar axis"
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.arange(0, 2, 0.01)
+theta = 2 * np.pi * r
+fig, ax = plt.subplots(
+  subplot_kw = {'projection': 'polar'} 
+)
+ax.plot(theta, r)
+ax.set_rticks([0.5, 1, 1.5, 2])
+ax.grid(True)
+plt.show()
+```
+
+# hope new work would come here
+
+asn dsome more text

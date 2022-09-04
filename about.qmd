@@ -1,0 +1,45 @@
+---
+title: "About Me"
+image: images/pic_500x300.jpg
+about:
+  template: marquee
+  links:
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/jitinkapila
+    - icon: linkedin
+      text: LinkedIn
+      href: https://linkedin.com/in/jitinkapila
+    - icon: github
+      text: Github
+      href: https://github.com/jkapila
+
+---
+
+:::{layout="[50,45]"}
+
+:::{.callout-tip}
+## As _Lao Tzu_ says:
+ 
+_If you want to shrink something, you must first allow it to expand.  <br>
+If you want to get rid of something, you must first allow it to flourish. <br>
+If you want to take something, you must first allow it to be given.  <br>
+This is called the **subtle perception** of the way things are.  <br>
+The soft overcomes the hard. The slow overcomes the fast.  <br>
+Let your workings remain a mystery. Just show people the results. <br>_
+
+***"Tao Te Ching, chapter 36, translation by Stephen Mitchell"***
+
+:::
+
+<br> <br>
+Well I am born and bought up in *Bhilai, C.G* (a Tire-II City of ***India***). <br> <br> A guy who just loved to look around and **Observe**. <br> <br> Though at a very young age it just made me lose my interest in standard schooling and constrained studies,yet it's the exactly same thing that has helped me build my career. 
+
+:::
+
+I have graduated as a **Mechanical Engineer**, completed my **Post Grads in Thermal Engineering** which eventually took a twisted turn to make me ***Dive into Data Science***.  Wiht **Masters in Data Science & Engg** I am presently working with _Nagarro Services Pvt. Ltd._, as _Data Science Architect_, where I am responsible to create End-to-End analytical solutions that help **The Business** make ***Informed Decisions***.
+
+I have worked on various projects from _Retail Analytics_ to _Fault Detection_ to _Forecasting_ to _Optimization_. Over the years my understanding of various concepts in **Machine Learning** and **Deep Learning** has gained those _Eyes of Observations_. This blog is my attempt to make those concepts more intuitive and easy, yet it would help you to form the basis of ***The Work*** we do that creates an ***Impact***.
+
+
+***Till next time, stay observant, stay crazy, stay safe, stay healthy.***
