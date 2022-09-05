@@ -21,13 +21,6 @@
     "text": "Grouped Trasformation\n\n\n  \nOld Work\n\nMisc Work - Lot of prior work but not well document can be found at Github\nPygemodels - A package for fitting Growth and Epidemiology Models in Python Github\nVCVN - R package for Variable Selection, Curve Fitting, Variable Conversion and Normalization Github\nSimulator Series in R - A Curve and Distribution Simulator in R Github\n\n\n\n\nReusehttps://creativecommons.org/licenses/by/4.0/CitationBibTeX citation:@online{kapila2020,\n  author = {Jitin Kapila},\n  editor = {},\n  title = {Packages},\n  date = {2020-05-23},\n  url = {https://www.jitinkapila.com/posts/packages.html},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nJitin Kapila. 2020. “Packages.” May 23, 2020. https://www.jitinkapila.com/posts/packages.html."
   },
   {
-    "objectID": "posts/20220902-linear-methods-for-classification/index.html",
-    "href": "posts/20220902-linear-methods-for-classification/index.html",
-    "title": "Subtle Insight",
-    "section": "",
-    "text": "hope new work would come here\nasn dsome more text"
-  },
-  {
     "objectID": "posts/20180501-adaptive-regression/index.html",
     "href": "posts/20180501-adaptive-regression/index.html",
     "title": "Adaptive Regression",
@@ -46,6 +39,13 @@
     "href": "index.html",
     "title": "Subtle Insight",
     "section": "",
-    "text": "This is normal qmd file\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nA flow to test your hypothesis in Python\n\n\nMaking life easy to do some serious hypothesis testing in python.\n\n\n\n\neda\n\n\nhypothesis\n\n\nanalysis\n\n\npython\n\n\n\n\nA simple code to run your hypothesis test.\n\n\n\n\n\n\nAug 10, 2021\n\n\nJitin Kapila\n\n\n\n\n\n\n  \n\n\n\n\nPackages\n\n\n\n\n\n\n\nportfolio\n\n\ndevelopment\n\n\n\n\nSome off the shelf work\n\n\n\n\n\n\nMay 23, 2020\n\n\nJitin Kapila\n\n\n\n\n\n\n  \n\n\n\n\nAdaptive Regression\n\n\nWe recently put through our observation on Regression Problem in our research. This post is a nonformal attempt to explain it.\n\n\n\n\nresearch\n\n\ncode\n\n\nanalysis\n\n\nr\n\n\n\n\nIf things are simple lets keep it simple. Paper here\n\n\n\n\n\n\nMay 1, 2018\n\n\nJitin Kapila\n\n\n\n\n\n\nNo matching items"
+    "text": "Linear methods of Classification\n\n\nSome learning from The Elements of Statitical Learning by Hastie, Tibshirani Friedman 2nd ed\n\n\n\n\nclassification\n\n\nlinear methods\n\n\npython\n\n\nimplementation\n\n\n\n\nNot replicating but finding ways to implement it in python from scratch\n\n\n\n\n\n\nSep 2, 2022\n\n\nJitin Kapila\n\n\n\n\n\n\n  \n\n\n\n\nA flow to test your hypothesis in Python\n\n\nMaking life easy to do some serious hypothesis testing in python.\n\n\n\n\neda\n\n\nhypothesis\n\n\nanalysis\n\n\npython\n\n\n\n\nA simple code to run your hypothesis test.\n\n\n\n\n\n\nAug 10, 2021\n\n\nJitin Kapila\n\n\n\n\n\n\n  \n\n\n\n\nPackages\n\n\n\n\n\n\n\nportfolio\n\n\ndevelopment\n\n\n\n\nSome off the shelf work\n\n\n\n\n\n\nMay 23, 2020\n\n\nJitin Kapila\n\n\n\n\n\n\n  \n\n\n\n\nAdaptive Regression\n\n\nWe recently put through our observation on Regression Problem in our research. This post is a nonformal attempt to explain it.\n\n\n\n\nresearch\n\n\ncode\n\n\nanalysis\n\n\nr\n\n\n\n\nIf things are simple lets keep it simple. Paper here\n\n\n\n\n\n\nMay 1, 2018\n\n\nJitin Kapila\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/20220902-linear-methods-for-classification/index.html",
+    "href": "posts/20220902-linear-methods-for-classification/index.html",
+    "title": "Linear methods of Classification",
+    "section": "",
+    "text": "hope new work would come here\nasn dsome more text\n\n\n\n\nReusehttps://creativecommons.org/licenses/by/4.0/CitationBibTeX citation:@online{kapila2022,\n  author = {Jitin Kapila},\n  editor = {},\n  title = {Linear Methods of {Classification}},\n  date = {2022-09-02},\n  url = {https://subtleinsight.netlify.app/posts/20220902-linear-methods-for-classification},\n  langid = {en}\n}\nFor attribution, please cite this work as:\nJitin Kapila. 2022. “Linear Methods of Classification.”\nSeptember 2, 2022. https://subtleinsight.netlify.app/posts/20220902-linear-methods-for-classification."
   }
 ]

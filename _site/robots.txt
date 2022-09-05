@@ -1,1 +1,1 @@
-Sitemap: https://www.jitinkapila.com/sitemap.xml
+Sitemap: https://subtleinsight.netlify.app/sitemap.xml

@@ -6,8 +6,12 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Jitin Kapila">
+<meta name="dcterms.date" content="2022-09-02">
+<meta name="keywords" content="classification, linear methods, python, implementation, scratch implementation, analysis, tests, datascience">
+<meta name="description" content="Not replicating but finding ways to implement it in python from scratch">
 
-<title>Subtle Insight – index</title>
+<title>Subtle Insight - Linear methods of Classification</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -83,6 +87,7 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
 </style>
 
 
@@ -104,6 +109,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -126,9 +134,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 <link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Subtle Insight - Linear methods of Classification">
+<meta property="og:description" content="Not replicating but finding ways to implement it in python from scratch">
+<meta property="og:image" content="https://unsplash.com/photos/fUnfEz3VLv4/download?force=true&amp;w=1920">
+<meta property="og:site-name" content="Subtle Insight">
+<meta property="og:image:alt" content="Image by [_Graham_](https://unsplash.com/@freedomstudios) at [Unsplash](https://unsplash.com/)">
+<meta name="twitter:title" content="Subtle Insight - Linear methods of Classification">
+<meta name="twitter:description" content="Not replicating but finding ways to implement it in python from scratch">
+<meta name="twitter:image" content="https://unsplash.com/photos/fUnfEz3VLv4/download?force=true&amp;w=1920">
+<meta name="twitter:creator" content="@jitinkapila">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image:alt" content="Image by [_Graham_](https://unsplash.com/@freedomstudios) at [Unsplash](https://unsplash.com/)">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -172,12 +191,61 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Linear methods of Classification</h1>
+            <p class="subtitle lead">Some learning from The Elements of Statitical Learning by Hastie, Tibshirani Friedman 2nd ed</p>
+                  <div>
+        <div class="description">
+          Not replicating but finding ways to implement it in python from scratch
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">classification</div>
+                <div class="quarto-category">linear methods</div>
+                <div class="quarto-category">python</div>
+                <div class="quarto-category">implementation</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Jitin Kapila </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 2, 2022</p>
+      </div>
+    </div>
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#this-is-normal-qmd-file" id="toc-this-is-normal-qmd-file" class="nav-link active" data-scroll-target="#this-is-normal-qmd-file">This is normal qmd file</a></li>
+  <li><a href="#hope-new-work-would-come-here" id="toc-hope-new-work-would-come-here" class="nav-link" data-scroll-target="#hope-new-work-would-come-here">hope new work would come here</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
+
 
 
 
@@ -185,6 +253,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>This is normal qmd file</h1>
 <p>For a demonstration of a line plot on a polar axis, see <a href="#fig-polar">Figure&nbsp;1</a>.</p>
 <div class="cell" data-execution_count="1">
+<details>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -197,10 +267,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ax.set_rticks([<span class="fl">0.5</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>])</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-display">
 <div id="fig-polar" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="index_files/figure-html/fig-polar-output-1.png" width="443" height="432" class="figure-img"></p>
+<p><a href="index_files/figure-html/fig-polar-output-1.png" class="lightbox" title="A line plot on a polar axis" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/fig-polar-output-1.png" width="443" height="432" class="figure-img"></a></p>
 <p></p><figcaption class="figure-caption">Figure&nbsp;1: A line plot on a polar axis</figcaption><p></p>
 </figure>
 </div>
@@ -214,7 +285,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{kapila2022,
+  author = {Jitin Kapila},
+  editor = {},
+  title = {Linear Methods of {Classification}},
+  date = {2022-09-02},
+  url = {https://subtleinsight.netlify.app/posts/20220902-linear-methods-for-classification},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-kapila2022" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
+Jitin Kapila. 2022. <span>“Linear Methods of Classification.”</span>
+September 2, 2022. <a href="https://subtleinsight.netlify.app/posts/20220902-linear-methods-for-classification">https://subtleinsight.netlify.app/posts/20220902-linear-methods-for-classification</a>.
+</div></div></section></div></main> <!-- /main -->
 <!-- plausible -->
 <script async="" defer="" data-domain="blog.djnavarro.net" src="https://plausible.io/js/plausible.js"></script>
 <script id="quarto-html-after-body" type="application/javascript">
@@ -429,6 +511,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","openEffect":"zoom","loop":true,"descPosition":"bottom"});</script>
 
 
 
